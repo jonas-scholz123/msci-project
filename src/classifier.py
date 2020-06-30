@@ -124,35 +124,37 @@ class Classifier():
 
 
 
+if __name__ == "__main__":
 
-fpath = "../data/podcasts/joe_rogan_elon_musk_may_2020.txt"
+    fpath = "../data/podcasts/joe_rogan_elon_musk_may_2020.txt"
 
-classifier = Classifier()
+    classifier = Classifier()
 
-classifier.read_file(fpath)
+    classifier.read_file(fpath)
 
-classifier.classify_emotion()
+    classifier.classify_emotion()
 
-classifier.classify_disagreement()
+    classifier.classify_disagreement()
 
-classifier.classify_topical_similarity()
+    classifier.classify_topical_similarity()
 
-#%%
-index_high_sim = classifier.discussion[classifier.discussion["similarity_to_next"] > 0.8].index
-index_next = index_high_sim + 1
+    classifier.discussion.head(50)
+    #%%
+    index_high_sim = classifier.discussion[classifier.discussion["similarity_to_next"] > 0.8].index
+    index_next = index_high_sim + 1
 
-combined_high_indices = sorted(list(set(index_high_sim.union(index_next))))
-combined_high_indices = combined_high_indices[:-1] #last index too high
+    combined_high_indices = sorted(list(set(index_high_sim.union(index_next))))
+    combined_high_indices = combined_high_indices[:-1] #last index too high
 
-classifier.discussion.iloc[combined_high_indices].head(50)
-
-
-index_low_sim = classifier.discussion[classifier.discussion["similarity_to_next"] < 0.6].index
-index_next_low = index_low_sim + 1
-
-combined_low_indices = sorted(list(set(index_low_sim.union(index_next_low))))
-combined_low_indices = combined_low_indices[:-1] #last index too high
-
-classifier.discussion.iloc[combined_low_indices].head(50)
+    classifier.discussion.iloc[combined_high_indices].head(50)
 
 #%%
+    index_low_sim = classifier.discussion[classifier.discussion["similarity_to_next"] < 0.6].index
+    index_next_low = index_low_sim + 1
+
+    combined_low_indices = sorted(list(set(index_low_sim.union(index_next_low))))
+    combined_low_indices = combined_low_indices[:-1] #last index too high
+
+    classifier.discussion.iloc[combined_low_indices].head(50)
+
+    #%%
