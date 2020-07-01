@@ -122,8 +122,9 @@ class Classifier():
 
         similarities.append(0.75) #last entry
         self.discussion["similarity_to_next"] = similarities
+        self.discussion["topic_change_next"] = (pd.Series(similarities) < 0.4)
         return self.discussion
-
+#%%
 
 
 if __name__ == "__main__":
