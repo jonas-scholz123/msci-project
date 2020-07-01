@@ -15,6 +15,8 @@ classifier.classify_emotion()
 
 classifier.classify_disagreement()
 
+classifier.iterate_topic_words()
+
 classifier.classify_topical_similarity()
 
 import numpy as np
@@ -57,7 +59,8 @@ class Visualiser():
     def show_fig(self):
         self.ax.set_xlim(self.min_x - 5, self.max_x + 5)
         self.ax.set_ylim(self.y - 5, 2)
-        self.fig.show()
+        #self.fig.show()
+        plt.show()
 
     def connect_nodes(self, n0, nf):
         x0, y0 = n0.center
@@ -77,7 +80,7 @@ vis = Visualiser()
 
 #%%
 branches = []
-breakpoints = classifier.discussion[classifier.discussion["topic_change_next"]].index + 1
+breakpoints = classifier.discussion[classifier.discussion["topic_change"]].index
 #breakpoints = [0] + breakpoints + [classifier.discussion.shape[0]]
 
 branches = np.split(classifier.discussion, breakpoints)
