@@ -5,17 +5,17 @@ from classifier import Classifier
 import numpy.random as rnd
 
 
-#fpath = "../data/podcasts/joe_rogan_elon_musk_may_2020.txt"
-#
-#classifier = Classifier()
-#
-#classifier.read_file(fpath)
-#
-#classifier.classify_emotion()
-#
-#classifier.classify_disagreement()
-#
-#classifier.classify_topical_similarity()
+fpath = "../data/podcasts/joe_rogan_elon_musk_may_2020.txt"
+
+classifier = Classifier()
+
+classifier.read_file(fpath)
+
+classifier.classify_emotion()
+
+classifier.classify_disagreement()
+
+classifier.classify_topical_similarity()
 
 import numpy as np
 
@@ -66,11 +66,32 @@ class Visualiser():
         con = ConnectionPatch(n0.center, nf.center, "data", "data", zorder = 0)
         self.ax.add_artist(con)
 
+#%%
+vis = Visualiser()
+
+#for i in range(25):
+#    x = rnd.randint(-5, 5)
+#    vis.add_node(x)
+#    vis.connect_nodes(vis.nodes[i - 1], vis.nodes[i])
+#vis.show_fig()
+
+#%%
+branches = []
+breakpoints = classifier.discussion[classifier.discussion["topic_change_next"]].index + 1
+#breakpoints = [0] + breakpoints + [classifier.discussion.shape[0]]
+
+branches = np.split(classifier.discussion, breakpoints)
+#for start, stop in zip(breakpoints, breakpoints[1:]):
+    #branches.append(classifier.discussion.iloc[:, start:stop])
 
 vis = Visualiser()
 
-for i in range(25):
-    x = rnd.randint(-5, 5)
-    vis.add_node(x)
-    vis.connect_nodes(vis.nodes[i - 1], vis.nodes[i])
+x = 0
+vis.add_node(x)
+for branch in branches:
+    for sentence in branch.values:
+        vis.add_node(x)
+        vis.connect_nodes(vis.nodes[-1], vis.nodes[-2])
+    x += 2
+
 vis.show_fig()
