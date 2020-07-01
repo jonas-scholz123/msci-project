@@ -16,6 +16,7 @@ import numpy as np
 import spacy
 
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from sklearn.manifold import MDS
 from scipy import spatial
 import sister
 
@@ -155,7 +156,38 @@ class Classifier():
 
         self.discussion["topic_words"] = topic_words
 
+    def make_branches(self):
+        breakpoints = self.discussion[self.discussion["topic_change"]].index
+        self.branches = np.split(self.discussion, breakpoints)
+        return self.branches
 
+    def make_dissimilarity_matrix(self):
+        nr_branches = len(self.branches)
+        dissimilarity = np.zeros((nr_branches, nr_branches))
+
+        for i, branch_i in enumerate(self.branches):
+            for j, branch_j in enumerate(self.branches):
+
+                # prevents recalculation of symmetric indices
+                if dissimilarity[i][j]: continue
+
+                utterance_i = " ".join(branch_i["topic_words"].values.tolist())
+                utterance_j = " ".join(branch_j["topic_words"].values.tolist())
+
+                vector_i = self.embedder(utterance_i)
+                vector_j = self.embedder(utterance_j)
+
+                dissimilarity[i][j] = spatial.distance.cosine(vector_i, vector_j)
+                dissimilarity[j][i] = spatial.distance.cosine(vector_i, vector_j)
+
+        self.dissimilarity = dissimilarity
+        self.topic_width = dissimilarity.max() #range of topics
+        return dissimilarity
+
+    def mds_topic_similarity(self):
+        #uses multidimensional scaling to reduce dissimilarity matrix to 1d
+        embedding = MDS(n_components = 1, dissimilarity = "precomputed")
+        self.x_branches = embedding.fit_transform(self.dissimilarity)
 
 
 
@@ -177,7 +209,20 @@ if __name__ == "__main__":
 
     classifier.classify_topical_similarity()
 
-    classifier.discussion[classifier.discussion["similarity"] < 0.3]
+    classifier.make_branches()
+
+    classifier.make_dissimilarity_matrix()
+
+    classifier.mds_topic_similarity()
+
+    for branch, x in zip(classifier.branches, classifier.x_branches):
+
+        branch["x_pos"] = [x[0] for i in range(len(branch))]
+    pd.set_option("display.max_rows", None)
+    disc = pd.concat(classifier.branches)
+    disc.sort_values("x_pos")
+    #%%
+
     #%%
     index_high_sim = classifier.discussion[classifier.discussion["similarity_to_next"] > 0.8].index
     index_next = index_high_sim + 1

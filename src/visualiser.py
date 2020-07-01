@@ -19,6 +19,12 @@ classifier.iterate_topic_words()
 
 classifier.classify_topical_similarity()
 
+classifier.make_branches()
+
+classifier.make_dissimilarity_matrix()
+
+classifier.mds_topic_similarity()
+
 import numpy as np
 
 class Visualiser():
@@ -37,12 +43,16 @@ class Visualiser():
         self.min_x = 0
         self.max_x = 0
 
+        self.width = 10
+
         self.node_radius = 0.3
 
         self.fig = plt.figure(0, figsize = (10, 10))
         self.ax = self.fig.add_subplot(111, aspect='equal')
 
-    def add_node(self, x, r = 0.3):
+    def add_node(self, x, r = 0.3, normalised = True):
+        if normalised:
+            x = self.width * x
         self.set_min_max(x)
         node = Circle((x, self.y), self.node_radius)
         self.ax.add_artist(node)
@@ -78,23 +88,13 @@ vis = Visualiser()
 #    vis.connect_nodes(vis.nodes[i - 1], vis.nodes[i])
 #vis.show_fig()
 
-#%%
-branches = []
-breakpoints = classifier.discussion[classifier.discussion["topic_change"]].index
-#breakpoints = [0] + breakpoints + [classifier.discussion.shape[0]]
-
-branches = np.split(classifier.discussion, breakpoints)
-#for start, stop in zip(breakpoints, breakpoints[1:]):
-    #branches.append(classifier.discussion.iloc[:, start:stop])
-
 vis = Visualiser()
 
-x = 0
-vis.add_node(x)
-for branch in branches:
+vis.add_node(0)
+vis.width = 2* len(classifier.branches) * classifier.topic_width
+
+for branch, x in zip(classifier.branches, classifier.x_branches):
     for sentence in branch.values:
         vis.add_node(x)
         vis.connect_nodes(vis.nodes[-1], vis.nodes[-2])
-    x += 2
-
 vis.show_fig()
