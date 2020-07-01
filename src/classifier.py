@@ -34,6 +34,9 @@ class Classifier():
         #State parameters
         self.emotion_classified = False
 
+        #Minimum words in sentence to accurately assess topic
+        self.minwords = 10
+
         return
 
     def classify(self):
@@ -104,28 +107,59 @@ class Classifier():
         topic_words = [str(tok.text) for tok in doc if tok.pos_ in ["NOUN"]]
         return " ".join(topic_words)
 
-    def classify_topical_similarity(self):
-        sentences = self.discussion["text"]
+    def classify_topical_similarity(self, nr_topics = 3):
 
         similarities = []
 
-        for s1, s2 in zip(sentences, sentences[1:]):
+        topic_words = self.discussion["topic_words"]
 
-            #Preprocess sentences by extracting topic words for better similarity estimates
-            s1 = self.extract_topic_words(s1)
-            s2 = self.extract_topic_words(s2)
+        topic_aggregator = list(self.discussion["topic_words"][:nr_topics].values)
+        prev_topic = self.discussion["topic_words"][1]
 
-            v1 = self.embedder(s1)
-            v2 = self.embedder(s2)
-            similarity = 1 - spatial.distance.cosine(v1, v2)
+        for topic in topic_words.values:
+            if topic == prev_topic:
+                similarities.append(1)
+                continue
+
+            new_topic_vector = self.embedder(topic)
+            old_topic_vectors = [self.embedder(topic) for topic in topic_aggregator]
+
+            all_similarities = [1 - spatial.distance.cosine(old, new_topic_vector) for old in old_topic_vectors]
+
+            similarity = max(all_similarities)
             similarities.append(similarity)
 
-        similarities.append(0.75) #last entry
-        self.discussion["similarity_to_next"] = similarities
-        self.discussion["topic_change_next"] = (pd.Series(similarities) < 0.4)
-        return self.discussion
-#%%
+            topic_aggregator.pop(0)
+            topic_aggregator.append(topic)
 
+        self.discussion["similarity"] = similarities
+        self.discussion["topic_change"] = (pd.Series(similarities) < 0.4)
+
+    def iterate_topic_words(self):
+        sentences = self.discussion["text"]
+
+        prev_topic_words = ""
+
+        topic_words = []
+
+        for s in sentences:
+            # filter short filler sentences
+            if len(s.split()) < self.minwords:
+                topic_words.append(prev_topic_words)
+
+            else:
+                topic = self.extract_topic_words(s)
+                if topic:
+                    prev_topic_words = topic
+                topic_words.append(prev_topic_words)
+
+        self.discussion["topic_words"] = topic_words
+
+
+
+
+
+#%%
 
 if __name__ == "__main__":
 
@@ -139,9 +173,11 @@ if __name__ == "__main__":
 
     classifier.classify_disagreement()
 
+    classifier.iterate_topic_words()
+
     classifier.classify_topical_similarity()
 
-    classifier.discussion.head(50)
+    classifier.discussion[classifier.discussion["similarity"] < 0.3]
     #%%
     index_high_sim = classifier.discussion[classifier.discussion["similarity_to_next"] > 0.8].index
     index_next = index_high_sim + 1
@@ -152,10 +188,12 @@ if __name__ == "__main__":
     classifier.discussion.iloc[combined_high_indices].head(50)
 
 #%%
-    index_low_sim = classifier.discussion[classifier.discussion["similarity_to_next"] < 0.6].index
-    index_next_low = index_low_sim + 1
+    index_low_sim = classifier.discussion[classifier.discussion["similarity"] < 0.4].index
+    index_next_low = index_low_sim - 1
+    index_next_low2 = index_low_sim - 2
 
-    combined_low_indices = sorted(list(set(index_low_sim.union(index_next_low))))
+    combined_low_indices = index_low_sim.union(index_next_low)
+    combined_low_indices = sorted(list(set(combined_low_indices.union(index_next_low2))))
     combined_low_indices = combined_low_indices[:-1] #last index too high
 
     classifier.discussion.iloc[combined_low_indices].head(50)
