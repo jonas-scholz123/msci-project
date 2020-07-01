@@ -94,12 +94,12 @@ class Classifier():
             if has_changed:
                 prev_negative = not prev_negative
 
-        self.discussion["disagreement"] = disagreements
+        self.discussion["emo_disagreement"] = disagreements
         return self.discussion
 
     def extract_topic_words(self, s):
         doc = self.word_type_model(s)
-        topic_words = [str(tok.text) for tok in doc if tok.pos_ in ["NOUN", "PRON"]]
+        topic_words = [str(tok.text) for tok in doc if tok.pos_ in ["NOUN"]]
         return " ".join(topic_words)
 
     def classify_topical_similarity(self):
