@@ -19,6 +19,8 @@ from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from scipy import spatial
 import sister
 
+pd.set_option('display.width', None)
+pd.set_option('display.max_colwidth', None)
 
 class Classifier():
 
