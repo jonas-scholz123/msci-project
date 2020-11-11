@@ -3,29 +3,26 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse, Circle, Arrow, ConnectionPatch
 from classifier import Classifier
 import numpy.random as rnd
-
-
-fpath = "../data/podcasts/joe_rogan_elon_musk_may_2020.txt"
-
-classifier = Classifier()
-
-classifier.read_file(fpath)
-
-classifier.classify_emotion()
-
-classifier.classify_disagreement()
-
-classifier.iterate_topic_words()
-
-classifier.classify_topical_similarity()
-
-classifier.make_branches()
-
-classifier.make_dissimilarity_matrix()
-
-classifier.mds_topic_similarity()
-
 import numpy as np
+import pandas as pd
+
+if __name__ == "__main__":
+    fpath = "../data/podcasts/joe_rogan_elon_musk_may_2020.txt"
+
+    classifier = Classifier()
+    classifier.read_file(fpath)
+    #classifier.classify_emotion()
+    #classifier.classify_disagreement()
+    #classifier.iterate_topic_words()
+    classifier.extract_important_words(method = "tf-ifd")
+    classifier.post_process_imp_words()
+    classifier.classify_topical_similarity()
+    classifier.make_branches()
+    classifier.make_dissimilarity_matrix()
+    classifier.mds_topic_similarity()
+
+    untouched = classifier.dissimilarity.copy()
+    classifier.dissimilarity = np.nan_to_num(classifier.dissimilarity, copy = True, nan=0.5)
 
 class Visualiser():
 
@@ -80,8 +77,8 @@ class Visualiser():
         self.ax.add_artist(con)
 
 #%%
-vis = Visualiser()
-
+import pandas as pd
+pd.set_option("display.max_rows", None)
 #for i in range(25):
 #    x = rnd.randint(-5, 5)
 #    vis.add_node(x)
@@ -91,8 +88,9 @@ vis = Visualiser()
 vis = Visualiser()
 
 vis.add_node(0)
-vis.width = 2* len(classifier.branches) * classifier.topic_width
-
+vis.width = 300
+classifier.discussion.iloc[580:660]
+#%%
 for branch, x in zip(classifier.branches, classifier.x_branches):
     for sentence in branch.values:
         vis.add_node(x)

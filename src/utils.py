@@ -2,6 +2,9 @@ import numpy as np
 import pickle
 import os
 
+from keras.preprocessing.text import Tokenizer
+from keras.preprocessing.sequence import pad_sequences
+
 def load_pretrained_glove(path):
     f = open(path, encoding='utf-8')
     print("Loading GloVe model, this can take some time...")
@@ -18,7 +21,7 @@ def load_pretrained_glove(path):
     print("Completed loading GloVe model.")
     return glv_vector
 
-def load_pretrained_matrix(path, word2id, force_new = False):
+def get_embedding_matrix(path, word2id, force_new = False):
     fpath = "../helper_files/embedding_matrix.pkl"
     if not force_new and os.path.exists(fpath):
         with open(fpath, "rb") as f:
@@ -44,10 +47,65 @@ def pad_nested_sequences(sequences, max_nr_sentences, max_nr_words):
         for j, utterance in enumerate(sequence):
             if j < max_nr_words:
                 X[i, j, :len(utterance)] = utterance
-
-    with open('./training_matrix.pkl', 'wb') as f:
-        pickle.dump(X, f)
     return X
 
 def split_into_chunks(l, chunk_size):
     return [l[i:i+chunk_size] for i in range(0, len(l), chunk_size)]
+
+def get_id2tag():
+    #open tag2id mapping for labels and create inverse
+    with open('../helper_files/mrda_id_to_tag.pkl', 'rb') as f:
+        id2tag = pickle.load(f)
+    return id2tag
+
+def get_tokenizer(all_utterances = None):
+    if os.path.exists("../helper_files/tokenizer.pkl"):
+        print("Found tokenizer, loading...")
+        with open("../helper_files/tokenizer.pkl", "rb") as f:
+            tokenizer = pickle.load(f)
+    else:
+        if all_utterances:
+            tokenizer = Tokenizer()
+            tokenizer.fit_on_texts(all_utterances)
+        else:
+            print("Couldn't find prebuilt tokenizer and no utterances provided.")
+            return
+    return tokenizer
+
+def convert_tag_to_id(l, tag2id):
+    return [tag2id[tag] for tag in l]
+
+def make_model_readable_data(conversations, labels, tokenizer, tag2id,
+    max_nr_utterances, max_nr_words):
+    conversation_sequences = [tokenizer.texts_to_sequences(c) for c in conversations]
+    X = pad_nested_sequences(conversation_sequences, max_nr_utterances, max_nr_words)
+    y = [[int(t_id) for t_id in t_ids] for t_ids in labels]
+    y = pad_sequences(y, max_nr_utterances, padding= "post")
+    return X, y
+
+def load_mrda_data(chunked = True, chunk_size = 100):
+
+    with open('../data/clean/mrda_utterances.tsv', 'r') as f:
+        lines = f.readlines()
+
+    conversations = [[u for u in c.split('\t')[1:]] for c in lines]
+    if chunked:
+        chunked_conversations = [split_into_chunks(c, chunk_size) for c in conversations]
+        chunked_conversations = sum(chunked_conversations, [])
+        conversations = chunked_conversations #TODO test
+
+    with open('../data/clean/mrda_labels.tsv', 'r') as f:
+        lines = f.readlines()
+
+    labels = [line.split("\t")[1:] for line in lines]
+
+    #fix parsing of '\n' tag
+    for l in labels[:-1]:
+        l[-1] = l[-1][:-1]
+
+    if chunked:
+        chunked_labels = [split_into_chunks(l, chunk_size) for l in labels]
+        chunked_labels = sum(chunked_labels, [])
+        labels = chunked_labels #todo test
+
+    return conversations, labels
