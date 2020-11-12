@@ -58,18 +58,21 @@ def get_id2tag():
         id2tag = pickle.load(f)
     return id2tag
 
-def get_tokenizer(all_utterances = None):
-    if os.path.exists("../helper_files/tokenizer.pkl"):
+def get_tokenizer(rebuild_from_all_texts = False):
+
+    tokenizer = Tokenizer()
+
+    if rebuild_from_all_texts:
+        all_texts = get_all_texts()
+        tokenizer.fit_on_texts(all_texts)
+
+    elif os.path.exists("../helper_files/tokenizer.pkl"):
         print("Found tokenizer, loading...")
         with open("../helper_files/tokenizer.pkl", "rb") as f:
             tokenizer = pickle.load(f)
     else:
-        if all_utterances:
-            tokenizer = Tokenizer()
-            tokenizer.fit_on_texts(all_utterances)
-        else:
-            print("Couldn't find prebuilt tokenizer and no utterances provided.")
-            return
+        print("Failed to get tokenizer")
+        return
     return tokenizer
 
 def convert_tag_to_id(l, tag2id):
@@ -109,3 +112,24 @@ def load_mrda_data(chunked = True, chunk_size = 100):
         labels = chunked_labels #todo test
 
     return conversations, labels
+
+def load_all_transcripts(transcript_dir = "../transcripts/", chunked = True,
+    chunk_size = 100):
+
+    transcripts = []
+    for fpath in os.listdir(transcript_dir):
+        with open(transcript_dir + fpath, 'r') as f:
+            transcripts.append(f.readlines())
+
+    if chunked:
+        chunked_transcripts = [split_into_chunks(t, chunk_size) for t in transcripts]
+        chunked_transcripts = sum(chunked_transcripts, [])
+        transcripts = chunked_transcripts
+
+    return transcripts
+
+def get_all_texts():
+    all_texts = []
+    all_texts += sum(load_mrda_data(chunked = False)[0], [])
+    all_texts += sum(load_all_transcripts(chunked = False), [])
+    return all_texts

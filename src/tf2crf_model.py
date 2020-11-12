@@ -32,7 +32,7 @@ id2tag = get_id2tag()
 tag2id = {t : id for id, t in id2tag.items()}
 n_tags = len(tag2id.keys())
 
-tokenizer = get_tokenizer(all_utterances)
+tokenizer = get_tokenizer(rebuild_from_all_texts=True) #TODO set to false for final model
 word2id = tokenizer.word_index
 
 X,y = make_model_readable_data(conversations, labels, tokenizer, tag2id,
