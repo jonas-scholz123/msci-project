@@ -4,10 +4,14 @@ from keras.layers import LSTM, Embedding, Dense, TimeDistributed, Dropout, Bidir
 from keras.optimizers import Adam, schedules
 from tf2crf import CRF
 
+import config
+
 def get_bilstm_crf_model(embedding_matrix, max_nr_utterances, max_nr_words, n_tags):
-    dropout_rate = 0.2
-    nr_lstm_cells = 300
-    init_lr = 1
+    dropout_rate = config.model["dropout_rate"]
+    nr_lstm_cells = config.model["nr_lstm_cells"]
+    init_lr = config.model["init_lr"]
+    decay_steps = config.model["decay_steps"]
+    decay_rate = config.model["decay_rate"]
 
     embedding_layer = Embedding(
                         embedding_matrix.shape[0],
@@ -25,9 +29,8 @@ def get_bilstm_crf_model(embedding_matrix, max_nr_utterances, max_nr_words, n_ta
 
     #last pooling
     utterance_encoder.add(Bidirectional(LSTM(nr_lstm_cells)))
-
     utterance_encoder.add(Dropout(dropout_rate))
-    utterance_encoder.add(Flatten()) #TODO does this do anything
+    #utterance_encoder.add(Flatten())
     utterance_encoder.summary()
 
     crf = CRF(dtype='float32')
@@ -39,11 +42,11 @@ def get_bilstm_crf_model(embedding_matrix, max_nr_utterances, max_nr_words, n_ta
     h = Dense(n_tags, activation=None)(h)
     crf_output = crf(h)
     model = Model(x_input, crf_output)
-    #h = Dense(n_tags, activation="softmax")(h)
-    #model = Model(x_input, h)
 
     model.summary()
-    lr_schedule = schedules.ExponentialDecay(init_lr, decay_steps = 1000, decay_rate = 0.5)
+    lr_schedule = schedules.ExponentialDecay(init_lr,
+        decay_steps = decay_rate, decay_rate = decay_rate)
+
     optimizer = Adam(learning_rate = lr_schedule)
     model.compile("adam", loss=crf.loss, metrics=[crf.accuracy])
     return model

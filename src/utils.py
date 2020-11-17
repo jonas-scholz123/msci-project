@@ -68,18 +68,20 @@ def split_into_chunks(l, chunk_size):
 def get_tokenizer(rebuild_from_all_texts = False):
 
     tokenizer = Tokenizer()
-
-    if rebuild_from_all_texts:
+    preloaded_exists = os.path.exists("../helper_files/tokenizer.pkl")
+    if rebuild_from_all_texts or not preloaded_exists:
+        print("Building tokenizer from all words, this might take a while...")
         all_texts = get_all_texts()
         tokenizer.fit_on_texts(all_texts)
         with open("../helper_files/tokenizer.pkl", "wb") as f:
             tokenizer = pickle.dump(tokenizer, f)
 
-    if os.path.exists("../helper_files/tokenizer.pkl"):
-        print("Found tokenizer, loading...")
+    else:
+        print("Found prebuilt tokenizer, loading...")
         with open("../helper_files/tokenizer.pkl", "rb") as f:
             tokenizer = pickle.load(f)
 
+    print("Done")
     return tokenizer
 
 def convert_tag_to_id(l, tag2id):
@@ -100,32 +102,32 @@ def make_model_readable_y(labels, max_nr_utterances):
     y = [[int(t_id) for t_id in t_ids] for t_ids in labels]
     return pad_sequences(y, max_nr_utterances, padding= "post")
 
-def load_mrda_data(chunked = True, chunk_size = 100):
-
-    with open('../data/clean/mrda_utterances.tsv', 'r') as f:
-        lines = f.readlines()
-
-    conversations = [[u for u in c.split('\t')[1:]] for c in lines]
-    if chunked:
-        chunked_conversations = [split_into_chunks(c, chunk_size) for c in conversations]
-        chunked_conversations = sum(chunked_conversations, [])
-        conversations = chunked_conversations #TODO test
-
-    with open('../data/clean/mrda_labels.tsv', 'r') as f:
-        lines = f.readlines()
-
-    labels = [line.split("\t")[1:] for line in lines]
-
-    #fix parsing of '\n' tag
-    for l in labels[:-1]:
-        l[-1] = l[-1][:-1]
-
-    if chunked:
-        chunked_labels = [split_into_chunks(l, chunk_size) for l in labels]
-        chunked_labels = sum(chunked_labels, [])
-        labels = chunked_labels #todo test
-
-    return conversations, labels
+#def load_mrda_data(chunked = True, chunk_size = 100):
+#
+#    with open('../data/clean/mrda_utterances.tsv', 'r') as f:
+#        lines = f.readlines()
+#
+#    conversations = [[u for u in c.split('\t')[1:]] for c in lines]
+#    if chunked:
+#        chunked_conversations = [split_into_chunks(c, chunk_size) for c in conversations]
+#        chunked_conversations = sum(chunked_conversations, [])
+#        conversations = chunked_conversations #TODO test
+#
+#    with open('../data/clean/mrda_labels.tsv', 'r') as f:
+#        lines = f.readlines()
+#
+#    labels = [line.split("\t")[1:] for line in lines]
+#
+#    #fix parsing of '\n' tag
+#    for l in labels[:-1]:
+#        l[-1] = l[-1][:-1]
+#
+#    if chunked:
+#        chunked_labels = [split_into_chunks(l, chunk_size) for l in labels]
+#        chunked_labels = sum(chunked_labels, [])
+#        labels = chunked_labels #todo test
+#
+#    return conversations, labels
 
 def load_all_transcripts(transcript_dir = "../transcripts/", chunked = True,
     chunk_size = 100):
@@ -144,36 +146,43 @@ def load_all_transcripts(transcript_dir = "../transcripts/", chunked = True,
 
 def get_all_texts():
     all_texts = []
-    all_texts += sum(load_mrda_data(chunked = False)[0], [])
-    all_texts += sum(load_switchboard_data()[0], [])
+    all_texts += sum(load_mrda_data()[0], [])
+    all_texts += sum(load_swda_data()[0], [])
     all_texts += sum(load_all_transcripts(chunked = False), [])
     return all_texts
 
 def turn_tags_to_id(labels, tag2id):
     return [[tag2id[l] for l in utterance_labels] for utterance_labels in labels]
 
-def load_swda_data():
-    corpus = CorpusReader('../data/switchboard-corpus/swda')
-
-    excluded_tags = ['x', '+']
-    conversations = []
-    labels = []
-    for transcript in corpus.iter_transcripts():
-        utterances, utterance_labels = process_transcript_txt(transcript, excluded_tags)
-        conversations.append(utterances)
-        labels.append(utterance_labels)
-
-    return conversations, labels
-
 def load_corpus_data(corpus, detail_level=0):
-    print("loading corpus")
+    print("loading corpus: ", corpus)
     if corpus == 'swda':
-        print("This might take a while")
         data = load_swda_data()
     elif corpus == 'mrda':
         data = load_mrda_data(detail_level)
     print("Done!")
     return data
+
+def load_swda_data():
+
+    if not os.path.exists("../helper_files/swda_data.pkl"):
+        corpus = CorpusReader('../data/switchboard-corpus/swda')
+        excluded_tags = ['x', '+']
+        conversations = []
+        labels = []
+        print('Loading swda transcripts, this might take a while')
+        for transcript in corpus.iter_transcripts():
+            utterances, utterance_labels = process_transcript_txt(transcript, excluded_tags)
+            conversations.append(utterances)
+            labels.append(utterance_labels)
+
+        with open("../helper_files/swda_data.pkl", "wb") as f:
+            pickle.dump((conversations, labels), f)
+    else:
+        with open("../helper_files/swda_data.pkl", "rb") as f:
+            conversations, labels = pickle.load(f)
+
+    return conversations, labels
 
 def process_transcript_txt(transcript, excluded_tags=None):
     # Special characters for ignoring i.e. <laughter>
