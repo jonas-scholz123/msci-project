@@ -152,8 +152,7 @@ def get_all_texts():
 def turn_tags_to_id(labels, tag2id):
     return [[tag2id[l] for l in utterance_labels] for utterance_labels in labels]
 
-def load_switchboard_data():
-
+def load_swda_data():
     corpus = CorpusReader('../data/switchboard-corpus/swda')
 
     excluded_tags = ['x', '+']
@@ -165,6 +164,16 @@ def load_switchboard_data():
         labels.append(utterance_labels)
 
     return conversations, labels
+
+def load_corpus_data(corpus, detail_level=0):
+    print("loading corpus")
+    if corpus == 'swda':
+        print("This might take a while")
+        data = load_swda_data()
+    elif corpus == 'mrda':
+        data = load_mrda_data(detail_level)
+    print("Done!")
+    return data
 
 def process_transcript_txt(transcript, excluded_tags=None):
     # Special characters for ignoring i.e. <laughter>
@@ -197,3 +206,32 @@ def process_transcript_txt(transcript, excluded_tags=None):
             utterances.append(" ".join(nltk.word_tokenize(utterance_sentence.lower()))) # this separates ?, ! etc from words
             labels.append(tag2id[utt.damsl_act_tag()])
     return utterances, labels
+
+def load_mrda_data(detail_level = 0):
+    training_dir = "../data/mrda_corpus/train"
+    test_dir = "../data/mrda_corpus/test"
+    val_dir = "../data/mrda_corpus/val"
+
+    labels_list = []
+    utterances_list = []
+
+    for dir in [training_dir, test_dir, val_dir]:
+        filenames = os.listdir(dir)
+
+        for fname in filenames:
+            fpath = dir + "/" + fname
+
+            with open(fpath, "r") as f:
+                lines = f.readlines()
+
+            split_lines = [l.split("|") for l in lines]
+            utterances = [l[1] for l in split_lines]
+
+            tags = [l[detail_level + 2].replace("\n", "") for l in split_lines]
+            id2tag = get_id2tag("mrda", detail_level)
+            tag2id = {t : id for id, t in id2tag.items()}
+            ids = [tag2id[tag] for tag in tags]
+
+            utterances_list.append(utterances)
+            labels_list.append(ids)
+    return utterances_list, labels_list
