@@ -9,7 +9,7 @@ from utils import get_embedding_matrix, pad_nested_sequences, \
     split_into_chunks, load_mrda_data, get_tokenizer, \
     make_model_readable_data, make_model_readable_X, load_all_transcripts
 
-from tf2crf_model import get_tf2crf_model
+from bilstm_crf_model import get_bilstm_crf_model
 
 from mappings import get_id2tag
 
@@ -33,9 +33,9 @@ embedding_matrix = get_embedding_matrix("../data/embeddings/glove.840B.300d.txt"
 
 os.environ["TF_FORCE_GPU_ALLOW_GROWTH"]="true"
 
-model = get_tf2crf_model(embedding_matrix, max_nr_utterances, max_nr_words, n_tags)
+model = get_bilstm_crf_model(embedding_matrix, max_nr_utterances, max_nr_words, n_tags)
 
-checkpoint_path = "../trained_model/tf2crf/ckpt_tf2crf.hdf5"
+checkpoint_path = "../trained_model/bilstm_crf/ckpt_bilstm_crf.hdf5"
 if os.path.exists(checkpoint_path):
     model.load_weights(checkpoint_path)
 
