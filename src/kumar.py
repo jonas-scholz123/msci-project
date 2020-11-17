@@ -5,7 +5,9 @@ import tensorflow_addons as tfa
 import pickle
 from keras.preprocessing.text import Tokenizer
 
-from utils import load_pretrained_matrix, pad_nested_sequences, split_into_chunks
+from utils import get_embedding_matrix, pad_nested_sequences, split_into_chunks, chunk
+from reformat_training_data import read_mrda_training_data
+from mappings import get_id2tag
 
 # helper methods
 def _pad_sequences(sequences, pad_tok, max_length):
@@ -82,37 +84,21 @@ def select(parameters, length):
 
 max_nr_utterances = 100
 max_nr_words = 200
+
+corpus = 'mrda'
+detail_level = 0
+
+conversations, labels = read_mrda_training_data(detail_level)
+
+all_utterances = sum(conversations, [])
+
 #open tag2id mapping for labels and create inverse
-with open('../helper_files/mrda_id_to_tag.pkl', 'rb') as f:
-    id2tag = pickle.load(f)
+id2tag = get_id2tag(corpus, detail_level)
 tag2id = {t : id for id, t in id2tag.items()}
 n_tags = len(tag2id.keys())
 
-with open('../data/clean/mrda_utterances.tsv', 'r') as f:
-    lines = f.readlines()
-
-conversations = [[u for u in c.split('\t')[1:]] for c in lines]
-chunked_conversations = [split_into_chunks(c, max_nr_utterances) for c in conversations]
-chunked_conversations = sum(chunked_conversations, [])
-conversations = chunked_conversations #TODO test
-
-all_utterances = [line.split("\t")[1:] for line in lines]
-all_utterances = sum(all_utterances, [])
-
-with open('../data/clean/mrda_labels.tsv', 'r') as f:
-    lines = f.readlines()
-
-labels = [line.split("\t")[1:] for line in lines]
-
-#fix parsing of '\n' tag
-for l in labels[:-1]:
-    l[-1] = l[-1][:-1]
-
-labels = [[int(l) for l in utterance_labels] for utterance_labels in labels]
-
-chunked_labels = [split_into_chunks(l, max_nr_utterances) for l in labels]
-chunked_labels = sum(chunked_labels, [])
-labels = chunked_labels #TODO test
+conversations = chunk(conversations, max_nr_utterances)
+labels = chunk(labels, max_nr_utterances)
 
 tokenizer = Tokenizer()
 tokenizer.fit_on_texts(all_utterances)
@@ -142,13 +128,12 @@ test_labels = labels[valid_index:test_index]
 dev_data = conversation_sequences[valid_index:]
 dev_labels = labels[valid_index:]
 
-len(labels)
-len(chunked_conversations)
 #%%
 
 # Global variables
 hidden_size_lstm_1 = 200
 hidden_size_lstm_2 = 300
+lr = 1
 tags = n_tags
 word_dim = 300
 proj1 = 200
@@ -176,7 +161,8 @@ class DAModel():
                 name = "_word_embeddings",
                 dtype = tf.float32,
                 shape = [words, word_dim],
-                initializer = tf.random_uniform_initializer()
+                #initializer = tf.random_uniform_initializer()
+                initializer = tf.constant_initializer(get_embedding_matrix("", None))
             )
             word_embeddings = tf.nn.embedding_lookup(_word_embeddings, self.word_ids, name="word_embeddings")
             self.word_embeddings = tf.nn.dropout(word_embeddings, 0.8)
@@ -261,7 +247,7 @@ class DAModel():
             self.accuracy = accuracy / tf.reduce_sum(tf.cast(self.dialogue_lengths, tf.float32))
 
         with tf.variable_scope("train_op"):
-            optimizer = tf.train.AdagradOptimizer(0.1)
+            optimizer = tf.train.AdagradOptimizer(lr)
             grads, vs = zip(*optimizer.compute_gradients(self.loss))
             grads, gnorm = tf.clip_by_global_norm(grads, self.clip)
             self.train_op = optimizer.apply_gradients(zip(grads, vs))
@@ -277,9 +263,9 @@ def main():
         sess.run(tf.global_variables_initializer())
 
         saver = tf.train.Saver()
-        if os.path.exists("../trained_model/kumar/model.index"):
+        if os.path.exists("../trained_model/kumar/model_glove.index"):
             print("MODEL FOUND, LOADING CHECKPOINT")
-            saver.restore(sess, "../trained_model/kumar/model")
+            saver.restore(sess, "../trained_model/kumar/model_glove")
         writer = tf.summary.FileWriter("../logs/kumar", sess.graph)
 
         clip = 2
@@ -348,7 +334,7 @@ def main():
                     writer.add_summary(dev_loss_summ, counter)
                     print("counter = {}, dev_loss = {}, dev_accuacy = {}".format(counter, valid_loss, valid_accuracy))
 
-                    saver.save(sess, "../trained_model/kumar/model")
+                    saver.save(sess, "../trained_model/kumar/model_glove")
 
         test_losses = []
         test_accs = []
