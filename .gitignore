@@ -6,3 +6,6 @@ dialogue-understanding/
 logs/
 trained_model/
 DAH/
+swda/
+Probabilistic-RNN-DA-Classifier/
+helper_files/
