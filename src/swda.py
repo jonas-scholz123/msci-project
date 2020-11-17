@@ -117,7 +117,7 @@ class CorpusReader:
             # Optional progress bar:
             if display_progress:
                 sys.stderr.write("\r")
-                sys.stderr.write("transcript %s" % i)
+                sys.stderr.write("transcript %s/1155" % i)
                 sys.stderr.flush(); i += 1
             # Yield the Transcript instance:
             yield Transcript(filename, self.metadata)
