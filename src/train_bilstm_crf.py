@@ -17,29 +17,23 @@ from tf2crf import CRF
 
 from utils import get_embedding_matrix, pad_nested_sequences, \
     split_into_chunks, load_mrda_data, get_tokenizer, \
-    make_model_readable_data, chunk, load_switchboard_data
+    make_model_readable_data, chunk, load_corpus_data
 
 from mappings import get_id2tag
-
-from reformat_training_data import read_mrda_training_data
 
 from bilstm_crf import get_bilstm_crf_model
 
 dropout_rate = 0.5
 EMBEDDING_DIM = 300
 max_nr_utterances = 100
-max_nr_words = 200
+max_nr_words = 107 #longest utterance in swda corpus > longest in mrda
 
-corpus = 'swda' # 'mrda' or 'swda'
+corpus = 'mrda' # 'mrda' or 'swda'
 detail_level = 0
 
 data_name = corpus + "_detail_" + str(detail_level)
 
-#get mrda data TODO: get other datasets in same format
-#conversations, labels = load_mrda_data(chunk_size = max_nr_utterances)
-conversations, labels = read_mrda_training_data(detail_level=detail_level)
-conversations, labels = load_switchboard_data()
-all_utterances = sum(conversations, [])
+conversations, labels = load_corpus_data(corpus, detail_level)
 
 conversations = chunk(conversations, max_nr_utterances)
 labels = chunk(labels, max_nr_utterances)
@@ -55,19 +49,12 @@ word2id = tokenizer.word_index
 X,y = make_model_readable_data(conversations, labels, tokenizer,
         max_nr_utterances, max_nr_words)
 
-
-y2 = to_categorical(y)
-y2.shape
-X.shape
-X3 = X.reshape(-1, X.shape[-1])
-y3 = y2.reshape(-1, y2.shape[-1])
 # import pretrained GloVe embeddings
 embedding_matrix = get_embedding_matrix("../data/embeddings/glove.840B.300d.txt",
     word2id, force_rebuild=False) #set force rebuild to False when not changing total vocabulary
 
 os.environ["TF_FORCE_GPU_ALLOW_GROWTH"]="true"
 
-#%%
 model = get_bilstm_crf_model(embedding_matrix, max_nr_utterances, max_nr_words, n_tags)
 
 checkpoint_path = "../trained_model/bilstm_crf/ckpt_" + data_name + ".hdf5"
@@ -79,20 +66,5 @@ model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
 if os.path.exists(checkpoint_path):
     model.load_weights(checkpoint_path)
 
-model.fit(X, y, batch_size=5, epochs=50, validation_split=0.2,
+model.fit(X, y, batch_size=5, epochs=5, validation_split=0.2,
     callbacks=[model_checkpoint_callback])
-
-#%%
-#hidden_layer = 128
-#
-#model = Sequential()
-#model.add(Embedding(embedding_matrix.shape[0], EMBEDDING_DIM, input_length=max_nr_words, weights=[embedding_matrix], mask_zero=False))
-#model.add(LSTM(hidden_layer, dropout=0.3, return_sequences=True, kernel_initializer='random_uniform', recurrent_initializer='glorot_uniform'))
-#model.add(TimeDistributed(Dense(hidden_layer, input_shape=(max_nr_words, hidden_layer))))
-#model.add(GlobalMaxPooling1D())
-#model.add(Dense(n_tags, activation='softmax'))
-#
-#optimizer = RMSprop(lr=0.001, decay=0.001)
-#model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
-#
-#model.fit(X3, y3, batch_size=500, epochs=50, validation_split=0.2)
