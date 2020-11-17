@@ -4,7 +4,7 @@ from keras.layers import LSTM, Embedding, Dense, TimeDistributed, Dropout, Bidir
 from keras.optimizers import Adam, schedules
 from tf2crf import CRF
 
-def get_tf2crf_model(embedding_matrix, max_nr_utterances, max_nr_words, n_tags):
+def get_bilstm_crf_model(embedding_matrix, max_nr_utterances, max_nr_words, n_tags):
     dropout_rate = 0.2
     nr_lstm_cells = 300
     init_lr = 1

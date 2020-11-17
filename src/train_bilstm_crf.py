@@ -23,7 +23,7 @@ from mappings import get_id2tag
 
 from reformat_training_data import read_mrda_training_data
 
-from tf2crf_model import get_tf2crf_model
+from bilstm_crf import get_bilstm_crf_model
 
 dropout_rate = 0.5
 EMBEDDING_DIM = 300
@@ -68,9 +68,9 @@ embedding_matrix = get_embedding_matrix("../data/embeddings/glove.840B.300d.txt"
 os.environ["TF_FORCE_GPU_ALLOW_GROWTH"]="true"
 
 #%%
-model = get_tf2crf_model(embedding_matrix, max_nr_utterances, max_nr_words, n_tags)
+model = get_bilstm_crf_model(embedding_matrix, max_nr_utterances, max_nr_words, n_tags)
 
-checkpoint_path = "../trained_model/tf2crf/ckpt_" + data_name + ".hdf5"
+checkpoint_path = "../trained_model/bilstm_crf/ckpt_" + data_name + ".hdf5"
 
 model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
     filepath=checkpoint_path,
