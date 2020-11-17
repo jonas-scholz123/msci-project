@@ -145,6 +145,7 @@ def load_all_transcripts(transcript_dir = "../transcripts/", chunked = True,
 def get_all_texts():
     all_texts = []
     all_texts += sum(load_mrda_data(chunked = False)[0], [])
+    all_texts += sum(load_switchboard_data()[0], [])
     all_texts += sum(load_all_transcripts(chunked = False), [])
     return all_texts
 
