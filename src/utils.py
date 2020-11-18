@@ -2,6 +2,9 @@ import numpy as np
 import pickle
 import os
 import nltk
+import operator
+import re
+from tqdm import tqdm
 
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
@@ -9,6 +12,7 @@ from swda import CorpusReader
 from mappings import get_id2tag
 
 def load_pretrained_glove(path):
+
     f = open(path, encoding='utf-8')
     print("Loading GloVe model, this can take some time...")
     glv_vector = {}
@@ -22,6 +26,7 @@ def load_pretrained_glove(path):
             continue
     f.close()
     print("Completed loading GloVe model.")
+
     return glv_vector
 
 def get_embedding_matrix(path, word2id, force_rebuild = False):
@@ -49,6 +54,9 @@ def pad_nested_sequences(sequences, max_nr_sentences, max_nr_words):
     for i, sequence in enumerate(sequences):
         for j, utterance in enumerate(sequence):
             if j < max_nr_words:
+                if len(utterance) > max_nr_words:
+                    print("WARNING: utterance too long, will be truncated, increase max_nr_words!")
+                    utterance = utterance[:max_nr_words]
                 X[i, j, :len(utterance)] = utterance
     return X
 
@@ -67,14 +75,14 @@ def split_into_chunks(l, chunk_size):
 
 def get_tokenizer(rebuild_from_all_texts = False):
 
-    tokenizer = Tokenizer()
+    tokenizer = Tokenizer(filters="")
     preloaded_exists = os.path.exists("../helper_files/tokenizer.pkl")
     if rebuild_from_all_texts or not preloaded_exists:
         print("Building tokenizer from all words, this might take a while...")
         all_texts = get_all_texts()
         tokenizer.fit_on_texts(all_texts)
         with open("../helper_files/tokenizer.pkl", "wb") as f:
-            tokenizer = pickle.dump(tokenizer, f)
+            pickle.dump(tokenizer, f)
 
     else:
         print("Found prebuilt tokenizer, loading...")
@@ -95,6 +103,7 @@ def make_model_readable_data(conversations, labels, tokenizer,
     return X, y
 
 def make_model_readable_X(conversations, tokenizer, max_nr_utterances, max_nr_words):
+    conversations = [[" ".join(nltk.word_tokenize(u)) for u in c] for c in conversations] #separates full stops etc
     conversation_sequences = [tokenizer.texts_to_sequences(c) for c in conversations]
     return pad_nested_sequences(conversation_sequences, max_nr_utterances, max_nr_words)
 
@@ -102,53 +111,13 @@ def make_model_readable_y(labels, max_nr_utterances):
     y = [[int(t_id) for t_id in t_ids] for t_ids in labels]
     return pad_sequences(y, max_nr_utterances, padding= "post")
 
-#def load_mrda_data(chunked = True, chunk_size = 100):
-#
-#    with open('../data/clean/mrda_utterances.tsv', 'r') as f:
-#        lines = f.readlines()
-#
-#    conversations = [[u for u in c.split('\t')[1:]] for c in lines]
-#    if chunked:
-#        chunked_conversations = [split_into_chunks(c, chunk_size) for c in conversations]
-#        chunked_conversations = sum(chunked_conversations, [])
-#        conversations = chunked_conversations #TODO test
-#
-#    with open('../data/clean/mrda_labels.tsv', 'r') as f:
-#        lines = f.readlines()
-#
-#    labels = [line.split("\t")[1:] for line in lines]
-#
-#    #fix parsing of '\n' tag
-#    for l in labels[:-1]:
-#        l[-1] = l[-1][:-1]
-#
-#    if chunked:
-#        chunked_labels = [split_into_chunks(l, chunk_size) for l in labels]
-#        chunked_labels = sum(chunked_labels, [])
-#        labels = chunked_labels #todo test
-#
-#    return conversations, labels
-
-def load_all_transcripts(transcript_dir = "../transcripts/", chunked = True,
-    chunk_size = 100):
-
-    transcripts = []
-    for fpath in os.listdir(transcript_dir):
-        with open(transcript_dir + fpath, 'r') as f:
-            transcripts.append(f.readlines())
-
-    if chunked:
-        chunked_transcripts = [split_into_chunks(t, chunk_size) for t in transcripts]
-        chunked_transcripts = sum(chunked_transcripts, [])
-        transcripts = chunked_transcripts
-
-    return transcripts
 
 def get_all_texts():
     all_texts = []
     all_texts += sum(load_mrda_data()[0], [])
     all_texts += sum(load_swda_data()[0], [])
     all_texts += sum(load_all_transcripts(chunked = False), [])
+    all_texts = [" ".join(nltk.word_tokenize(s)) for s in all_texts]
     return all_texts
 
 def turn_tags_to_id(labels, tag2id):
@@ -244,3 +213,52 @@ def load_mrda_data(detail_level = 0):
             utterances_list.append(utterances)
             labels_list.append(ids)
     return utterances_list, labels_list
+
+
+def load_all_transcripts(transcript_dir = "../transcripts/", chunked = True,
+    chunk_size = 100):
+
+    transcripts = []
+    for fpath in os.listdir(transcript_dir):
+        with open(transcript_dir + fpath, 'r') as f:
+            transcript = f.read()
+        transcript = transcript.split("\n")
+
+        conversation = transcript[1::3]
+        conversation = " ".join(conversation).lower().replace("...", "")
+        conversation = np.asarray(nltk.word_tokenize(conversation))
+
+        sentence_boundary_indices = []
+        for i, token in enumerate(conversation):
+            if token in [".", "?", "!", ";"]:
+                sentence_boundary_indices.append(i + 1)
+
+        utterances = [" ".join(u) for u in np.split(conversation, sentence_boundary_indices)]
+        transcripts.append(utterances)
+
+    if chunked:
+        return chunk(transcripts, chunk_size)
+
+    return transcripts
+
+def check_coverage(vocab,embeddings_index):
+    #checks what fraction of words in vocab are in the embeddings
+    a = {}
+    oov = {}
+    k = 0
+    i = 0
+    for word in tqdm(vocab):
+        try:
+            a[word] = embeddings_index[word]
+            k += vocab[word]
+        except:
+
+            oov[word] = vocab[word]
+            i += vocab[word]
+            pass
+
+    print('Found embeddings for {:.2%} of vocab'.format(len(a) / len(vocab)))
+    print('Found embeddings for  {:.2%} of all text'.format(k / (k + i)))
+    sorted_x = sorted(oov.items(), key=operator.itemgetter(1))[::-1]
+
+    return sorted_x
