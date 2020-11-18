@@ -180,42 +180,54 @@ def get_tag2full_label(corpus, detail_level):
                     'by': 'Sympathy',
                     'fw': 'Welcome'}
 
-
-
-#def seperate_by_first_cap(s):
-#    for i, char in enumerate(s):
-#        if char.isupper() or char.isdigit():
-#            idx = i
-#            break
-#    return s[:idx], s[idx:]
-#
-#s = s.replace(" ", "")
-#
-#l = s.split("|")
-#full_names = []
-#labels = []
-#full_names.append(l[0])
-#for s in l[1:-1]:
-#    print(s)
-#    label, full_name = seperate_by_first_cap(s)
-#    labels.append(label)
-#    full_names.append(full_name)
-#
-#labels.append([l[-1]])
-#
-#labels[-1] = labels[-1][0]
-#
-#tag_to_full_label = {l : f for l, f in zip(labels, full_names)}
-#
-#id2tag = {id : tag for id, tag in enumerate(labels)}
-#
-#id2tag
-
-with open("../Probabilistic-RNN-DA-Classifier/data/labels.txt", "r") as f:
-    lines = f.readlines()
-    lines = [l.replace("\n", "").split(" ") for l in lines]
-ids = [l[0] for l in lines]
-tags = [l[1] for l in lines]
-id2tag = {id : tag for id, tag in zip(ids, tags)}
-
-id2tag
+    if corpus == "swda":
+        return {'sd': 'Statement-non-opinion',
+                'b': 'Acknowledge (Backchannel)',
+                'sv': 'Statement-opinion',
+                'aa': 'Agree/Accept',
+                '% -': 'Abandoned or Turn-Exit',
+                'ba': 'Appreciation',
+                'qy': 'Yes-No-Question',
+                'x': 'Non-verbal',
+                'ny': 'Yes answers',
+                'fc': 'Conventional-closing',
+                '%': 'Uninterpretable',
+                'qw': 'Wh-Question',
+                'nn': 'No answers',
+                'bk': 'Response Acknowledgement',
+                'h': 'Hedge',
+                'qy^d': 'Declarative Yes-No-Question',
+                'o': 'Other',
+                'fo': 'Other',
+                'bc': 'Other',
+                'by': 'Other',
+                'fw': 'Other',
+                'bh': 'Backchannel in question form',
+                '^q': 'Quotation',
+                'bf': 'Summarize/reformulate',
+                'ny^e': 'Affirmative non-yes answers',
+                'na': 'Affirmative non-yes answers',
+                'ad': 'Action-directive',
+                '^2': 'Collaborative Completion',
+                'b^m': 'Repeat-phrase',
+                'qo': 'Open-Question',
+                'qh': 'Rhetorical-Questions',
+                '^h': 'Hold before answer/agreement',
+                'ar': 'Reject',
+                'nn^e': 'Negative non-no answers',
+                'ng': 'Negative non-no answers',
+                'br': 'Signal-non-understanding',
+                'no': 'Other answers',
+                'fp': 'Conventional-opening',
+                'qrr': 'Or-Clause',
+                'nd': 'Dispreferred answers',
+                'arp': 'Dispreferred answers',
+                't3': '3rd-party-talk',
+                'oo,cc,co': 'Offers, Options Commits',
+                't1': 'Self-talk',
+                'bd': 'Downplayer',
+                'aap/am': 'Maybe/Accept-part',
+                '^g': 'Tag-Question',
+                'qw^d': 'Declarative Wh-Question',
+                'fa': 'Apology',
+                'ft': 'Thanking'}
