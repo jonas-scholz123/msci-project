@@ -67,11 +67,26 @@ def chunk(l_of_ls, chunk_size):
 def split_into_chunks(l, chunk_size):
     return [l[i:i+chunk_size] for i in range(0, len(l), chunk_size)]
 
-#def get_id2tag(corpus):
-    #open tag2id mapping for labels and create inverse
-    #with open('../helper_files/' + corpus + '_id_to_tag.pkl', 'rb') as f:
-        #id2tag = pickle.load(f)
-    #return id2tag
+def merge_offset_arrays(base, offset, step):
+    """
+    Merges offset array (where offset array is same shape as base except a chunk
+    of size step missing both at the beginning and end) into the base array as follows:
+
+    a = np.zeros((12)) #array of 0s
+    b = np.zeros((8)) + 1 #array of 1s
+
+    merge_offset_arrays(a, b, step=2)
+
+    >>> array([0., 0., 0., 1., 1., 0., 0., 1., 1., 0., 0., 0.])
+    """
+    idx = step//2
+    new_idx = 0
+
+    while new_idx < offset.shape[0] - step:
+        new_idx = idx + step
+        base[idx + step : new_idx + step] = offset[idx : new_idx]
+        idx = new_idx + step
+    return base
 
 def get_tokenizer(rebuild_from_all_texts = False):
 
@@ -89,8 +104,9 @@ def get_tokenizer(rebuild_from_all_texts = False):
         with open("../helper_files/tokenizer.pkl", "rb") as f:
             tokenizer = pickle.load(f)
 
-    print("Done")
+    print("Done!")
     return tokenizer
+
 
 def convert_tag_to_id(l, tag2id):
     return [tag2id[tag] for tag in l]
@@ -220,26 +236,31 @@ def load_all_transcripts(transcript_dir = "../transcripts/", chunked = True,
 
     transcripts = []
     for fpath in os.listdir(transcript_dir):
-        with open(transcript_dir + fpath, 'r') as f:
-            transcript = f.read()
-        transcript = transcript.split("\n")
-
-        conversation = transcript[1::3]
-        conversation = " ".join(conversation).lower().replace("...", "")
-        conversation = np.asarray(nltk.word_tokenize(conversation))
-
-        sentence_boundary_indices = []
-        for i, token in enumerate(conversation):
-            if token in [".", "?", "!", ";"]:
-                sentence_boundary_indices.append(i + 1)
-
-        utterances = [" ".join(u) for u in np.split(conversation, sentence_boundary_indices)]
+        utterances = load_one_transcript(transcript_dir + fpath, chunked = chunked,
+            chunk_size=chunk_size)
         transcripts.append(utterances)
 
-    if chunked:
-        return chunk(transcripts, chunk_size)
-
     return transcripts
+
+def load_one_transcript(fpath, chunked = True, chunk_size = 100):
+    with open(fpath, 'r') as f:
+        transcript = f.read()
+    transcript = transcript.split("\n")
+
+    conversation = transcript[1::3]
+    conversation = " ".join(conversation).lower().replace("...", "")
+    conversation = np.asarray(nltk.word_tokenize(conversation))
+
+    sentence_boundary_indices = []
+    for i, token in enumerate(conversation):
+        if token in [".", "?", "!", ";"]:
+            sentence_boundary_indices.append(i + 1)
+
+    utterances = [" ".join(u) for u in np.split(conversation, sentence_boundary_indices)]
+
+    if chunked:
+        utterances = split_into_chunks(utterances, chunk_size)
+    return utterances
 
 def check_coverage(vocab,embeddings_index):
     #checks what fraction of words in vocab are in the embeddings
@@ -262,3 +283,105 @@ def check_coverage(vocab,embeddings_index):
     sorted_x = sorted(oov.items(), key=operator.itemgetter(1))[::-1]
 
     return sorted_x
+
+
+def generate_confusion_matrix(data, predictions, metadata, verbose=False):
+    # ONLY SHOWS FIRST 5!
+    # Get label data
+    labels = data['labels']
+
+    # Get metadata
+    index_to_label = metadata['index_to_label']
+    label_to_index = metadata['label_to_index']
+    num_labels = metadata['num_labels']
+
+
+    # Create empty confusion matrix
+    confusion_matrix = np.zeros(shape=(num_labels, num_labels), dtype=int)
+
+    # For each prediction
+    for i in range(len(predictions)):
+        # Get prediction with highest probability
+        prediction = np.argmax(predictions[i])
+
+        # Add to matrix
+        confusion_matrix[label_to_index[labels[i]]][prediction] += 1
+
+    if verbose:
+        # Print confusion matrix
+        print("------------------------------------")
+        print("Confusion Matrix:")
+        print('{:15}'.format(" "), end='')
+        for j in range(confusion_matrix.shape[1]):
+            print('{:15}'.format(index_to_label[j]), end='')
+        print()
+        for j in range(confusion_matrix.shape[0]):
+            print('{:15}'.format(index_to_label[j]), end='')
+            print('\n'.join([''.join(['{:10}'.format(item) for item in confusion_matrix[j]])]))
+
+    return confusion_matrix
+
+
+def plot_history(history, title='History'):
+    # Create figure and title
+    fig = plt.figure()
+    fig.set_size_inches(10, 5)
+    fig.suptitle(title, fontsize=14)
+
+    # Plot accuracy
+    acc = fig.add_subplot(121)
+    acc.plot(history['accuracy'])
+    #acc.plot(history['val_acc'])
+    acc.set_ylabel('Accuracy')
+    acc.set_xlabel('Epoch')
+
+    # Plot loss
+    loss = fig.add_subplot(122)
+    loss.plot(history['loss'])
+    loss.plot(history['val_loss'])
+    loss.set_ylabel('Loss')
+    loss.set_xlabel('Epoch')
+    loss.legend(['Train', 'Test'], loc='upper right')
+
+    # Adjust layout to fit title
+    fig.tight_layout()
+    fig.subplots_adjust(top=0.15)
+
+    return fig
+
+
+def plot_confusion_matrix(matrix, classes,  title='', matrix_size=10, normalize=False, color='black', cmap='viridis'):
+
+    # Number of elements of matrix to show
+    if matrix_size:
+        matrix = matrix[:matrix_size, :matrix_size]
+        classes = classes[:matrix_size]
+
+    # Normalize input matrix values
+    if normalize:
+        matrix = matrix.astype('float') / matrix.sum(axis=1)[:, np.newaxis]
+        value_format = '.2f'
+    else:
+        value_format = 'd'
+
+    # Create figure with two axis and a colour bar
+    fig, ax = plt.subplots(ncols=1, figsize=(5, 5))
+
+    # Generate axis and image
+    ax, im = plot_matrix_axis(matrix, ax, classes, title, value_format, color=color, cmap=cmap)
+
+    # Add colour bar
+    divider = make_axes_locatable(ax)
+    colorbar_ax = divider.append_axes("right", size="5%", pad=0.05)
+    color_bar = fig.colorbar(im, cax=colorbar_ax)
+    # Tick color
+    color_bar.ax.yaxis.set_tick_params(color=color)
+    # Tick labels
+    plt.setp(plt.getp(color_bar.ax.axes, 'yticklabels'), color=color)
+    # Edge color
+    color_bar.outline.set_edgecolor(color)
+
+    # Set layout
+    fig.tight_layout()
+
+    return fig
