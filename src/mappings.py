@@ -197,6 +197,7 @@ def get_tag2full_label(corpus, detail_level):
                 'bk': 'Response Acknowledgement',
                 'h': 'Hedge',
                 'qy^d': 'Declarative Yes-No-Question',
+                'fo_o_fw_"_by_bc': 'Other',
                 'o': 'Other',
                 'fo': 'Other',
                 'bc': 'Other',
