@@ -10,9 +10,15 @@ model = dict(
     decay_steps = 1000, #after decay_steps, lr is reduced by a factor of decay_rate
     decay_rate = 0.5,
     batch_size = 5, #number of samples processed in parallel
+    validation_fraction = 0.1,
+    test_fraction = 0.1,
 )
 
 corpus = dict(
     corpus = 'swda', # 'mrda' or 'swda'
     detail_level = 0, #for mrda, 0, 1, 2 from lowest detail to highest
 )
+
+# disable huge number of information prints by tensorflow
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
