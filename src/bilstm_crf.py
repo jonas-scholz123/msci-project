@@ -6,7 +6,8 @@ from tf2crf import CRF
 
 import config
 
-def get_bilstm_crf_model(embedding_matrix, max_nr_utterances, max_nr_words, n_tags):
+def get_bilstm_crf_model(embedding_matrix, max_nr_utterances, max_nr_words, n_tags, verbose=False):
+    print("loading model...")
     dropout_rate = config.model["dropout_rate"]
     nr_lstm_cells = config.model["nr_lstm_cells"]
     init_lr = config.model["init_lr"]
@@ -31,7 +32,8 @@ def get_bilstm_crf_model(embedding_matrix, max_nr_utterances, max_nr_words, n_ta
     utterance_encoder.add(Bidirectional(LSTM(nr_lstm_cells)))
     utterance_encoder.add(Dropout(dropout_rate))
     #utterance_encoder.add(Flatten())
-    utterance_encoder.summary()
+    if verbose:
+        utterance_encoder.summary()
 
     crf = CRF(dtype='float32')
 
@@ -43,10 +45,12 @@ def get_bilstm_crf_model(embedding_matrix, max_nr_utterances, max_nr_words, n_ta
     crf_output = crf(h)
     model = Model(x_input, crf_output)
 
-    model.summary()
+    if verbose:
+        model.summary()
     lr_schedule = schedules.ExponentialDecay(init_lr,
         decay_steps = decay_rate, decay_rate = decay_rate)
 
     optimizer = Adam(learning_rate = lr_schedule)
     model.compile("adam", loss=crf.loss, metrics=[crf.accuracy])
+    print("Done!")
     return model
