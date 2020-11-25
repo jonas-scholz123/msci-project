@@ -242,25 +242,6 @@ def load_all_transcripts(transcript_dir = "../transcripts/", chunked = True,
 
     return transcripts
 
-def load_one_transcript(fpath, chunked = True, chunk_size = 100):
-    with open(fpath, 'r') as f:
-        transcript = f.read()
-    transcript = transcript.split("\n")
-
-    conversation = transcript[1::3]
-    conversation = " ".join(conversation).lower().replace("...", "")
-    conversation = np.asarray(nltk.word_tokenize(conversation))
-
-    sentence_boundary_indices = []
-    for i, token in enumerate(conversation):
-        if token in [".", "?", "!", ";"]:
-            sentence_boundary_indices.append(i + 1)
-
-    utterances = [" ".join(u) for u in np.split(conversation, sentence_boundary_indices)]
-
-    if chunked:
-        utterances = split_into_chunks(utterances, chunk_size)
-    return utterances
 
 def check_coverage(vocab,embeddings_index):
     #checks what fraction of words in vocab are in the embeddings
@@ -385,3 +366,39 @@ def plot_confusion_matrix(matrix, classes,  title='', matrix_size=10, normalize=
     fig.tight_layout()
 
     return fig
+
+def _is_timestamp(s):
+    return len(re.findall("[0-9]{2}:[0-9]{2}", s)) > 0
+
+def get_speakers():
+    transcript_paths = os.listdir("../transcripts")
+    transcript_names = [p.split(".")[0] for p in transcript_paths]
+    speakers = ([" ".join(n.split("_")[0:2]) for n in transcript_names] +
+                    [" ".join(n.split("_")[2:4]) for n in transcript_names])
+    speakers = list(set(speakers))
+    return [name.split(" ")[0].capitalize() + " "
+                    + name.split(" ")[1].capitalize() for name in speakers]
+
+def load_one_transcript(fpath, chunked = True, chunk_size = 100):
+    with open(fpath, 'r') as f:
+        transcript = f.read()
+    transcript = transcript.split("\n")
+
+    speakers = get_speakers()
+    conversation = [line for line in transcript if
+        not _is_timestamp(line)
+        and not line in speakers
+        and not line == ""]
+    conversation = " ".join(conversation).lower().replace("...", "")
+    conversation = np.asarray(nltk.word_tokenize(conversation))
+
+    sentence_boundary_indices = []
+    for i, token in enumerate(conversation):
+        if token in [".", "?", "!", ";"]:
+            sentence_boundary_indices.append(i + 1)
+
+    utterances = [" ".join(u) for u in np.split(conversation, sentence_boundary_indices)]
+
+    if chunked:
+        utterances = split_into_chunks(utterances, chunk_size)
+    return utterances
