@@ -15,11 +15,6 @@ max_nr_words = config.data["max_nr_words"]
 corpus = config.corpus["corpus"]
 detail_level = config.corpus["detail_level"]
 
-transcripts = load_all_transcripts(chunked=True, chunk_size=max_nr_utterances)
-
-transcript = load_one_transcript("../transcripts/joe_rogan_elon_musk_may_2020.txt",
-    chunked=True, chunk_size=max_nr_utterances)
-
 def make_annotated_transcript(transcript):
     '''
     Completes the end-to-end process for any given transcript.
@@ -84,7 +79,7 @@ if __name__ == '__main__':
     #transcripts = load_all_transcripts(chunked=True, chunk_size=max_nr_utterances)
     #annotated_transcripts = [make_annotated_transcript(t) for t in transcripts]
 
-    transcript = load_one_transcript("../transcripts/joe_rogan_elon_musk_may_2020.txt",
+    transcript = load_one_transcript("../transcripts/joe_rogan_elon_musk.txt",
         chunked=True, chunk_size=max_nr_utterances)
     annotated_transcript = make_annotated_transcript(transcript)
     annotated_transcript
