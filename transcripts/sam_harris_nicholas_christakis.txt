@@ -1,0 +1,687 @@
+00:00:00
+Sam Harris
+Welcome to the Making Sense Podcast. This is Sam Harris. Okay. So, it is all coronavirus all the time now. In my world. I'm actually gonna be releasing two podcasts on coronavirus this week. This has preempted the other things I have in the pipeline because I think you know, if you've been listening, I've been doing a series on nuclear war, and I also have a podcast on child sexual abuse. The podcast seems have taken a dark turn, and I find that I can not drop either of those podcasts into the current environment when we need to be thinking about coronavirus and its resultant disease, COVID-19. So, I will try to find some good cheer for you at some point, but let's talk about the problem at hand.
+
+00:00:52
+Sam Harris
+So, this the first of two podcasts I'll do this week, if everything holds together. I just wanna say a couple of things upfront, lest they get lost. I've been spending a fair amount of time focusing on this, as many of you have. I've been frankly alarmed by several encounters I've had with very smart people, both in person and online, which have revealed a mismatch between what I think is true and what many smart people believe. Here are a few statements which I think are true. COVID-19 is worse than the flu in every way. So, comparisons with the flu are highly misleading. And it is not just bad if you catch it and you're over 70 or you're immunocompromised. There are healthy, fit people getting killed by this virus.
+
+00:01:53
+Sam Harris
+Another point I want to make upfront, which we make at some length in this podcast, is that even if we're all destined to catch this virus, eventually, social distancing at this point is essential. So-called flattening the curve is actually a very big deal, right? So, just think about this - to get the worst flu in your life is bad, but to get it when the health care system has collapsed under the pressure of everyone else getting this flu is very different than getting it when hospitals are functioning normally. And the only lever within reach right now in the absence of a vaccine, the only thing we can do is delay the spread of this by changing our behavior. So, the time for hugging people and shaking hands is over. You are not being friendly by shaking someone's hand. In fact, you're being quite rude. You're advertising your obliviousness to the risk you're posing to others.
+
+00:03:00
+Sam Harris
+And wherever you are on earth at the moment, if you can work from home, you should work from home. And this should be a company policy, right. If you have a company where some percentage of the work can be accomplished by telecommuting, you should implement that policy right now. And this is also true for schools. Stanford, two days ago, announced that all their classes would be moved online. Schools everywhere should implement that policy as quickly as they can. Now, there's an obvious tradeoff between economic incentives and containing the spread of this disease. We should be privileging the latter. This is absolutely the time to avoid social gatherings and public transport as much as possible. And anyone who has taken his or her cues from President Trump at this point is dangerously out of contact with reality.
+
+00:04:03
+Sam Harris
+Anyway, all of that and more will be made clear in this episode. And there's no paywall for this one, obviously. This was yet another public service announcement. Today, I'm speaking with Nicholas Christakis. Nicholas is an Md PhD and a professor of Social and Natural Science at Yale University, where he directs the Human Nature Lab and is the co-director of the Yale Institute for Network Science. He was elected to the National Academy of Medicine in 2006, and the American Association for the Advancement of Science in 2010, and the American Academy of Arts and Sciences in 2017. And his New York Times bestselling book, which is just coming out in paperback, is Blueprint, which I've read and discussed before in this podcast with Nicholas. And I highly recommend it.
+
+00:04:54
+Sam Harris
+And so, here, Nicholas and I cover this emerging epidemic - now, certainly a pandemic from many sides. And again, whatever we don't cover here, if you have remaining questions, please direct them to me on Twitter because I'll be recording another episode with a doctor from Johns Hopkins. As you know, things are changing very quickly here, but this conversation was a very good snapshot of what we knew on March 8th. And now, I bring you Nicholas Christakis.
+
+00:05:30
+Sam Harris
+I am here with Nicholas Christakis. Nicholas, thanks for joining me.
+
+00:05:34
+Nicholas Christakis
+Thank you so much for having me, Sam.
+
+00:05:36
+Sam Harris
+We are going to talk about coronavirus, which is if you're in my particular bubble, it is all that anyone is thinking about it. I don't know how wide that bubble extends. I am noticing that it doesn't extend perfectly across the political spectrum. On social media, I'm noticing many people who seem to be in Trumpistan thinking that this is much ado about nothing. And we'll talk about the political implications of this as well. But how much of your bandwidth is being taken up by a coronavirus at the moment?
+
+00:06:07
+Nicholas Christakis
+Well, a huge amount of my a scientific bandwidth around January 25, a longstanding collaboration with a group of scientists from Hong Kong, who in turn are connected to some other scientists in China, and around January 24th or 25th, we started emailing about the situation there and what kind of work we might be able to do. And I began to think more deliberately about how I might turn my laboratory over to trying to help with a pandemic, which was, for me, at least, obviously, going to happen.
+
+00:06:40
+Nicholas Christakis
+And I had done some research with the H1N1 pandemic 10 years ago related to using social networks as a way of forecasting the course of the epidemic. So, I began to resurrect that work and some other work and began these new collaborations with my Chinese colleagues. And I haven't slept much honestly in the last month because we've been working nonstop on a number of fronts. So, my scientific bandwidth is totally devoted to that right now; although, we have a few other projects going on. And my personal bandwidth is I'm concerned. I'm monitoring the situation.
+
+00:07:15
+Sam Harris
+Right. We should just remind people who you are. You've been on the podcast before. Last time, we spoke about your wonderful book, Blueprint, which I believe is just now coming out in paperback. Is that right?
+
+00:07:26
+Nicholas Christakis
+Yeah. By coincidence, this week.
+
+00:07:28
+Sam Harris
+Okay, cool. So, if people want to hear that podcast, it's in the archive. And I certainly encourage that people get the book. You have a great background for this conversation because you are an MD PhD, who has also focused of late primarily on networks and the way really anything spreads in a network. You want to give a potted bio here to get us rolling?
+
+00:07:54
+Nicholas Christakis
+Well, I have become obsessed over the last 15 years with the study of networks in general. And of course, there are networks of computers, and networks of neurons, and networks of genes, and, of course, networks of people. And it is through these networks that everything from germs, to ideas, to norms, to behaviors spread. And they are not the only lens with which we can understand spreading processes, but they're very powerful and important lens. And right now, we have, for example, what I would consider to be a dueling contagion between biological contagion, namely the coronavirus, which is spreading on this network from person to person to person. And in parallel with that, we have another set of social contagions, which is, for example, ideas about whether people should be vaccinated or whether people should self-isolate. And those spread, your probability of vaccinating depends on whether your friends get vaccinated, for example. So, we have these parallel biological and social sociological contagions. And in some sense, the fate of what happens in our country will depend in part, not completely, but in part on who wins in those contagions.
+
+00:09:10
+Sam Harris
+Yeah, okay. So, our goal here is to spread some good and useful contagious ideas. And I think before we dove into the details, I went out on Twitter asking for questions and suggested topics. And I got close to a thousand responses so far. So-
+
+00:09:25
+Nicholas Christakis
+Oh, my God
+
+00:09:25
+Sam Harris
+.... there's no want of interest here. But I think I should just mention that I see some obvious ways in which people can fail to absorb what we're saying in good faith here. And one variable is certainly political. I think that any criticism of the government's response to this crisis, thus far, will be interpreted by many, many people as both of us or one of us, I mean, certainly, in my case, trying to score a partisan political point against the president. And I can just assure you, dear listener, this isn't the case. I've made no secret about how unfit I believe Trump is to be leading this country. And he has proven that to me in spades in the last few weeks. But everything I'm going to say at any point in this conversation that touches on what seems to be political obfuscation and general cluelessness from this administration, I would say about any administration that was responding this way in the face of a clear public health emergency.
+
+00:10:37
+Nicholas Christakis
+Yeah. I mean, the virus is wholly apolitical. And I think there is a biology, and a sociology, and an epidemiology to the virus that doesn't really care what politicians say or do. And I think it's important to remember that we can speak about plain facts, about the epidemiology of coronavirus. And in doing so, says nothing about our political leadership. Now, it is the case that the political leadership may also be failing, and that's a distinct topic. But merely discussing facts about the epidemic is not an indictment of the administration per se.
+
+00:11:14
+Sam Harris
+Or discussing facts like the fact that the Trump administration cut the US Pandemic Response Team in 2018 because they thought we didn't need it. And this is, at best, a shortsighted view of reality. I mean, one of the most prescient and relevant things that's been said in recent weeks about this whole moment is that whether or not coronavirus is as bad as the most alarmed people think it is or whether it might just be a dress rehearsal for some coming pandemic that really is as bad as people fear.
+
+00:11:49
+Sam Harris
+Two things are true. One is we're failing the dress rehearsal to an impressive degree. And the we in particular, the United States and that should matter to us. And two, some pandemic, whether this is the one or not, is guaranteed to come. Bill Gates made this point. Like this is the most predictable emergency you could possibly name. This was guaranteed to happen. And if this isn't it, let's learn all the lessons we can from our missteps here. But this was a gift courtesy of evolution that we knew was coming. And the fact that we have an administration that seems to think that a pandemic response team is optional is pretty depressing.
+
+00:12:34
+Nicholas Christakis
+Well, I agree with much of that in the sense that I totally agree that the predictability of these pandemics, and this can also be reassuring to listeners. We have pandemics of viral pathogens, including in the category of coronaviruses, which is a category we're facing now every 10 or 15 years. People will remember the SARS outbreak and the H1N1 outbreaks of the last decade. We can talk about the ways in which this virus is different than those outbreaks. And people who've studied history know that there was a major global pandemic in 1918. So, every century or so, there is like a major pandemic like that in which the pathogen is both very deadly and very transmissible.
+
+00:13:14
+Nicholas Christakis
+In other times, we have passengers that are very transmissible and not so deadly. And those proved to burn out very quickly, like the pandemic in 2006-2007. In other times, we have pandemics of diseases that are very deadly, but not so transmissible, for example, SARS. And then, when the disease is too deadly, it actually works against itself. If it kills its victims, it doesn't transmit as much. So, in a way, right now, we have a disease that's moderately deadly and moderately transmissible, and that could be quite a perfect storm. It could be a condition that, let's say, in every 50-year event.
+
+00:13:53
+Nicholas Christakis
+But the main point is that these influenza pandemics come every 10 or 15 years. And sometimes, they fizzle out. And sometimes, they don't. Sometimes, they're very serious. And when they're very serious, they wreak havoc not only in terms of the health and people's lives, but they can wreak economic havoc as well, which is another thing that many observers are beginning to be concerned about.
+
+00:14:16
+Sam Harris
+Yeah, yeah. And there really is a tension between the focus on the epidemiology, and the straightforward health concerns, and this other concern about the economics, and the the social implications of people not going to restaurants, and closing schools, and all the rest.
+
+00:14:37
+Nicholas Christakis
+Those are the first order effects. So, the travel industry is being devastated even as we speak. And it's unclear how long that will last. But then, we'll begin to have second order effects. So, breakdowns in the supply chain and factories not working. And if those things begin to happen, this epidemic could tip us into a significant recession. But that's another whole thing. And it's still a little bit early to forecast that and be certain about that. But it is the case that major epidemics, for example, the 1918 pandemic definitely played a role in the global depression. So, I think it's too early to know that for sure, but it's not crazy to think about the economic implications.
+
+00:15:16
+Nicholas Christakis
+And incidentally, on the economic issue, and I'm no expert on this, this is not a demand shock. This is potentially a supply shock. So, a demand shock is when a recession due to declining demand, and then a stimulus might work, for example, a dropping interest rates, as the Fed recently did. But a supply shock is more like the Arab oil crisis of the 1970s that many listeners may remember. And that's when you have a shock to the supply on the supply side. And there, lowering interest rates doesn't really help. So, if for the sake of argument, you begin to get disruption in the global supply chain, this could be a very difficult thing to address until you get the factories working, producing the goods and distributing them. So, it's too early to know for sure what's going to happen in that regard. But I know that many sophisticated observers of this, including many economists and many extremely wealthy individuals who are tracking this, are unsure still what's going to happen.
+
+00:16:16
+Sam Harris
+Except the one thing we can be sure about here is that-
+
+00:16:20
+Nicholas Christakis
+On the economic side, I mean, I'm sure.
+
+00:16:22
+Sam Harris
+Yeah, I know, but I mean, we can be sure that the incentives aren't aligned here. And this is what has been worrying me for now, at least, I would say two weeks, the moment I recognize that the health incentives, the reason, say, to close schools seemed fairly straightforward; and yet, the economic reasons to keep them open were and are incredibly powerful and pointing in the opposite direction. And my concern is that because the economic incentives are so powerful, I mean, to just take school closure as one variable, the fact that once you close the schools, then you have almost every working adult faced with the problem of what to do with their children. How do you get to work? How do you care for your children? Do you homeschool them? Does that cut the workforce more or less in half? I mean, this is just a huge hassle with economic implications.
+
+00:17:20
+Sam Harris
+And so, the reasons not to have the epiphany that we should close the schools yesterday are legion. And yet, the health wisdom of closing the schools has been fairly obvious for some time. We're gonna get to lots of specific questions in a minute, but let's just touch this topic of school closure just to give a sense of the problem in microcosm. What are your thoughts on that?
+
+00:17:47
+Nicholas Christakis
+Well, first of all, with school closures, we have to make a distinction between reactive and proactive school closures. So, let's talk first about reactive school closures. A reactive school closure is a school closure in which there's a case at the school. And when that happens, typically, everyone is alarmed and is quite eager and willing to close the school. It sort of makes sense to the man on the street or the woman on the street that, well, there's an epidemic raging, and there's a case at the school, and we should close the school.
+
+00:18:14
+Nicholas Christakis
+The problem is by the time you do reactive school closures, many, many analysis show that it doesn't delay the overall epidemic or doesn't help the overall epidemic very much. For example, an analysis of reactive school closures in the last influenza epidemic in Italy showed that a policy of reactive school closures, I think, reduced the epidemic by like 24% or 25%, the ultimate number of people afflicted, which is good but not as good as you might want. So, you can postpone the peak of the epidemic in your community and reduce the number of people ultimately infected if you close schools once someone gets sick in the school.
+
+00:18:54
+Nicholas Christakis
+A similar analysis done in Japan found, basically, the same conclusions. And modeling exercise as sort of mathematical models, sophisticated models, including a paper published in the Journal of Nature in 2006, also found that a policy of reactive school closure delayed - I'm just going to look the numbers up because I have them somewhere here. For a moderately transmissible disease, reduce the cumulative attack rate by about 24%, and delayed the peak by about 13 days. So, the models and the empirical results of prior school closures in Japan and Italy, which is the literature I am familiar with, I'm sure there's even vaster literature on this, suggests that reactive school closures help.
+
+00:19:37
+Nicholas Christakis
+But the real problem or the real dilemma is whether we should have proactive school closures. And this is a much more difficult decision, but from my eye, something we should be doing, frankly. And the reason is that if you imagine you're in a — let's not pick a major, let's not pick New York or Miami yet, because that's another whole kettle of fish. Let's pick a mid-sized town for the sake of argument. If you believe that the moment someone in your school gets sick, you are going to close the school. Probably, what you really should do is the moment someone gets sick in your community or in what is known as the epidemiologically relevant region, so if you believe that the moment someone gets sick in the epidemiologically relevant region, your town, that it eventually will afflict your school, then the more rational policy is, as soon as someone gets sick in your community, shut the school. You're going to shut it anyway in a week because your school's going to be afflicted, but if you jump the gun and shot it, you actually might radically improve the course of the epidemic in your community.
+
+00:20:48
+Nicholas Christakis
+And there is actually amazing evidence about this. So, again, just to crystallize the point, let's say you set some threshold, and we can discuss what the threshold is, some number of cases in some specified area in your town, or in an adjoining town, or a case that you know is not an imported case, it's not like someone flew from Italy to your town and presented with the disease, but instead you find what is known as a community transmission, someone who has the disease, and you don't know where they got it, that means the disease is loose in your community. If you set as a threshold one such case or two such cases in your town or in a nearby town, you could then proactively close your school. And then, you would have much bigger benefit than the reactive closure.
+
+00:21:33
+Nicholas Christakis
+And there was a wonderful analysis that was done of 43 cities in the United States during the 1918 epidemic, which very carefully examined across these cities when did they close their schools with respect to the pace of the epidemic and for how long were they closed. And it found, for example, if you use as a threshold how far in advance of the epidemic reaching — if you create the standard of you have twice the level of respiratory deaths as you usually have in prior years, you have excess deaths, how far in advance of hitting that twice the amount level did you close your schools, it found that actually districts that closed your schools in advance proactively had dramatically lower death rates in the end.
+
+00:22:21
+Nicholas Christakis
+And so, for example, there is a comparison between St. Louis and Pittsburgh. St. Lewis close the schools in the 1918 influenza pandemic earlier and longer, and it had less than half the death rate of Pittsburgh, for example, ultimately. Many fewer people died. So, this is the issue and this is what's hard. But in general, my own bias, my own opinion is that proactive school closures makes sense.
+
+00:22:45
+Sam Harris
+Yeah. I completely agree with you there. And there's one meme being spread, which is perhaps entirely factual, but I would argue misinterpreted and that is giving people comfort around this idea that we can just keep the schools humming along. This idea that kids aren't getting this or if they're getting it, they're not getting a bad case of it. And that's great. That seems to be true thus far. But it also seems true that they could still carry it and pass it to the rest of the community.
+
+00:23:17
+Nicholas Christakis
+Correct.
+
+00:23:17
+Sam Harris
+So, your kid is coming home from school and hugging grandma and-
+
+00:23:21
+Nicholas Christakis
+Correct.
+
+00:23:22
+Sam Harris
+... this is a very different disease when grandma gets us.
+
+00:23:25
+Nicholas Christakis
+Yes, that's exactly right. And in fact, it is the case that everything we just said about school closure is especially important when kids themselves might die, but the requirement that kids be sick is not the critical point. Schools are areas of congregation, of large numbers of people, including all the adults, the parents at the drop-offs, the teachers, and the kids are little vectors here. And incidentally, as long as you're talking about like how to school closure work, one of the ironies about one of the ways that school closures work, paradoxically, is precisely because they compel adults to stay home. So, modelers that have modeled this have said, "Okay, what happens when we require the kids to stay home, so we reduce social clumping in our society, because we're requiring the kids to stay home, but let's assume that 10% of the parents, or 50% of the parents, or 90% the parents are staying home as a result of the school closure?" And unsurprisingly, that also has a further effect, the number of parents that stay home.
+
+00:24:27
+Sam Harris
+And so much of this is psychological. I mean, just take that fact I just mentioned that some comfort is being taken in this idea that this is not preferentially targeting kids; rather, it's targeting old people. But if you flip that around, if this were a flu that had an inordinately high mortality rate that was targeting kids preferentially, well, we would have closed the schools already. I don't think we would be debating school closure.
+
+00:24:54
+Nicholas Christakis
+Well, we might. Yes, we might have. But there's another kind of moral issue here. You're right. That very good data we now have on the mortality rate and how it varies by age. So, young people, one study of 5000 Koreans shows that basically nobody under the age of 30 afflicted with a condition died in that study. And another study of 44,000 Chinese, I think, showed a case fatality ratio of 0.2%. So, two out of a thousand young people might die. Now, that's still bad. I mean, that's a high risk of death for a young person, but the number rises quite dramatically. So, by middle age, it's 1% to 2% of people die. And by over the age 80, it's let's say roughly 20% of people die.
+
+00:25:37
+Nicholas Christakis
+So, yes, you're correctly summarizing the situation. But one of the things that distressed me in reading all this is that I, too, like most people, would prefer that the young be spared and the old the afflicted. But the older members of our society too, they are our neighbors, our parents, they're our teachers. I mean, I hate this idea that, "Oh, well, it's just like afflicting old people. Who cares?" It's ridiculous. I mean, they're human beings. So, this is, again, a situation which we can talk about the epidemiology of the condition, but I don't think we should lose sight of what's happening, which is that people will die from this condition.
+
+00:26:16
+Sam Harris
+Right. Well, let's tackle another meme here, which seems to be doing an inordinate amount of work in people's reaction to this. And it does seem, at this point, frankly, misleading, which is the idea that this is essentially just like the flu. Here are some of them factoids that come in this cluster. One is 50,000 people die every year in the United States from flu. In 2018, it was something like 80,000, which I think is the worst year in recent memory. So, comparatively, only about 4000 people, just nearly 4000 people have died worldwide from coronavirus thus far.
+
+00:26:58
+Sam Harris
+This really is a tempest in a teapot. If we were tracking the flu with the same paranoia that we're tracking this, well, then we would be alarmed every day of our lives. And then, also there's the fact that though the mortality rate of this seems higher than the flu, it also seems clear that we're not testing widely enough to know what the actual denominator is to properly calculate the case fatality rate. So, it's been reported that it's as high as 3.5%.
+
+00:27:27
+Nicholas Christakis
+No, it won't be that high.
+
+00:27:28
+Sam Harris
+It won't be that high, but then, they're estimates. It seems like the most sober estimates are more like half that, between 1% and 2%. But there seems to be the expectation on the part of many people that, at the end of the day, we're going to recognize, this is just another flu essentially running in parallel with the flu that we deal with year after year, and nobody freaks out about it, and nobody closes the schools. What are your thoughts on that?
+
+00:27:57
+Nicholas Christakis
+Yeah, I think that's all wrong. And I can explain why. So, first of all, let me back up and say a couple things, a bunch of things. First of all, if I told you that motor vehicle accidents were leading killer in our society, and they are, about 35,000 of people die of motor vehicle accidents every year, and our society is very gravely concerned about these deaths. We invest huge resources in improving the safety of our roads and cars. We have enormous campaigns and penalties for people who drive under the influence. We cry and are sad when we read about motor vehicle deaths. And the public health community, and our government, and the people on the street expend enormous resources and attention in driving down one of these leading killers in our society.
+
+00:28:40
+Nicholas Christakis
+And if I told you that I could wave a magic wand and remove that cause of death tomorrow, many people would be amazed, and excited, and incredibly proud. Well, right now, we're in the midst of adding such a cause of death in the case of the coronavirus, that is to say, our best estimates, the most optimistic estimate is that only 35,000 Americans are going to die of this condition. So, we've just added a whole other extra cause of death to the list of things that kill us right now in our society. So, I just don't see the reason for nonchalance or optimism with respect to a new condition, a new killer that might kill us. Imagine if instead of being, "something that sounded so benign as influenza or the flu," imagine instead if I said it was Ebola, imagine the panic that people would feel if I said we now have Ebola loose in our country killing 35,000 people. So, I totally reject that.
+
+00:29:35
+Nicholas Christakis
+Furthermore, there is a wide range of estimates as to how many people will get infected and/or die. And this is, still, we're in early days and it's difficult. And it's difficult for people. It's difficult for me, just I'll speak for myself, because I don't want to be alarmist, and I don't want to overestimate it, and then have people call me to task and say, "Oh, you were Chicken Little, and you were an alarmist," and then maybe lose some credibility, let's say. In the other hand, I don't want to minimize it and underestimate it, and then people say, "Why didn't you warn us? Why didn't you tell us? You should have been in a position to know. You've been studying this topic and related topics for so long." And, of course, there's only going to be one outcome. It's not like I'm making a thousand predictions and on average, I'm correct or other experts who are similarly situated as I am. There's gonna be one outcome. And so, we have to speak in terms of a range of outcomes.
+
+00:30:31
+Nicholas Christakis
+So, at the most optimistic end, I think, we'll have over a million Americans infected with this pathogen and perhaps 35,000 dead, but that's just at the most optimistic end. The much more likely scenarios, or equally likely, or other possible scenarios move up the range. So, for example, Mark Lipschitz, a very famous epidemiologist at Harvard who's an expert in this area, estimates, and he's revising his estimates as more data comes in, but he estimates as of last week that perhaps 20% to 60% of Americans will ultimately, over the course of a year, be infected with this pathogen. And if we use the lower bound of his current estimate, 20%, that means 60 millions Americans will be infected. And if we use a lower bound of the case fatality ratio, which is 0.5%, that means 300,000 Americans are going to die of this condition. And that is like one of the top three killers in the United States.
+
+00:31:29
+Nicholas Christakis
+And that's within the realm of the possible. I'm not saying that's going to happen. I'm saying we need to sit up and pay attention because that is possible. It's not an extremely unlikely event, and it could even be worse than that, honestly. I don't think, if you forced me to predict, do I think 300,000 Americans? It seems so inconceivable to me. But look what's happening in Italy, 16 million Italians are now under lockdown. Their hospitals are full to the brim. What makes us think we're so special? We think we're different than the Italians or than the Chinese? We're not.
+
+00:32:05
+Sam Harris
+The truth is we are different from the Chinese. And this is another meme that is doing some mad work in the brains of otherwise very smart people. I even saw a Stanford doctor reference China as a source of optimism. And China has the spread of the disease, has been fairly well contained, it seems at the moment. The fatalities are dropping off, so far as we can trust the information come out of China but-
+
+00:32:28
+Nicholas Christakis
+That's true.
+
+00:32:29
+Sam Harris
+Yeah, it seems to be true, but what is also true is that China just executed the most draconian quarantine, perhaps in human history. And we are not poised to be poised to do anything like that ever.
+
+00:32:46
+Nicholas Christakis
+Yes, I'm actively writing about just that. And according to New York Times reports, 700 million Chinese have been in under some form of house arrest basically since January the 25th. So, these people are basically homebound. And that's extraordinary. I mean, that's just an extraordinary dimension. And it is the case the Chinese have, miraculously, driven their cases down to about a hundred a day, which is unbelievable in the whole nation. But it's through the imposition of such a cordon sanitaire. Technically, it's not a quarantine. A quarantine is when you put sick people in quarantine. When you put healthy and sick people, it's a cordon sanitaire, which is what they've done.
+
+00:33:30
+Sam Harris
+Right, right. So, the lesson to draw from that, I mean, it seems to me that we can draw no real comfort from that because-
+
+00:33:36
+Nicholas Christakis
+Not reproducible.
+
+00:33:39
+Sam Harris
+Something miraculous would have to happen in our society for us to emulate that in any way. And again, it seems the kind of thing that need not be accomplished at the point of a rifle as in China. But the idea that we're going to accomplish it just by getting it into our thick heads that we should practice social distancing to that degree, it seems very far fetched. So, what we should anticipate is a much freer spread of this contagion in our society.
+
+00:34:08
+Nicholas Christakis
+Yeah, yes. And we'll come back to this, I'm sure as what can people do. And I absolutely think we Americans should be practicing social distancing. On Twitter, I've been talking about this for quite a while. Sensible policies of not engaging in any nonessential travel, not going to meetings, washing your hands, not hugging, instead bowing or doing namaste or something, not touching people, not handshaking, which is very instinctive in our society. These are all basic things all Americans, in my view, should be implementing now.
+
+00:34:41
+Nicholas Christakis
+And the reason we do this, incidentally, just to be very clear, it's not just so that you don't get sick. When we do these things, we interrupt the contagion chains that flow through the network. In other words, we're stopping the virus in its tracks by interrupting the means with which it spreads from person to person. So, the reason I don't shake your hand is not just that I don't get sick, but that in not having shaken your hand, I block all paths of the virus from you to anyone else I might meet in the future. And that's extremely effective. And social distancing repeatedly has been shown to be an effective so-called non-pharmaceutical intervention.
+
+00:35:21
+Nicholas Christakis
+But I want to I want to tackle one other thing which relates to, perhaps, another meme on your list, I don't know which. This claim that the Trump administration cessation of international flights was effective. And this has been studied for an extremely long time by scientists of all stripes. And just to quote one analysis, typically, countries are not aware of the emergence of a pandemic until, let's say, the 30th day of the disease, which is, again, roughly what happened in this country with this coronavirus epidemic. By the time the disease emerges in Wuhan around late December, it's spreading throughout the district, in the prefecture, in Hubei for at least a month or so. And before, let's say, no more flights from China or something. But again, here, economics weighs against it. People are reluctant to do this. But the point is that it's been studied repeatedly how effective is cessation of international flights on day 30 of a pandemic.
+
+00:36:28
+Nicholas Christakis
+And I'll just read you some numbers. So, if you stop 90% of the flights on day 30 of a pandemic, you delay the peak in the epidemic in your country by about 10 or 12 days. If you stop 99% of the flights, you delay the peak of your epidemic by, let's say, 26 days. And if you stop 99.9% of the flights, you only have one out of a thousand flights still coming into the country, you only delay the peak by 42 days. Now, that's good. Delaying the peak is good, but it's not this panacea that, "Oh, we're gonna stop the thing at our border," because it's still going to come to us. Either it already came to us by the time we stopped the flights, and it's now brewing, or we cannot totally hermetically seal our country, so it's going to afflict us. So, this fantasy that we can somehow, in an age of pandemics, stop them at our border is not justified by the epidemiological modeling.
+
+00:37:24
+Sam Harris
+Right. Well, let me just say, in defense of Trump, that's the one decision or one utterance attributable to him that I don't fault him for. I mean, it seemed like it was worth a shot. Why not try to delay it that way if you can? But yeah, I mean, I take all your points.
+
+00:37:43
+Nicholas Christakis
+Yes. But earlier, we were talking about how economic considerations might lead us to not close down schools. But here, economic considerations do not lead us to abandon the effort to stop flights. And yet, the school stoppage is known to be effective; whereas, the flight stoppage is known not to be effective.
+
+00:38:01
+Sam Harris
+No, no, no, no. Point taken. I mean, I think, we should be firing on all cylinders here. But let's talk about the timeline for a second because I want to just get our bearings here. And it's interesting to consider my own psychological timeline as these events unfold. So, as you said, at the end of December, actually, December 31st, the World Health Organization reported that there was this mysterious pneumonia in China that seemed to be associated with the Wuhan live animal market. Perhaps, we can just cut through all political partisanship here and agree that eating bats and pangolins is a bad idea. Can we agree on that?
+
+00:38:40
+Nicholas Christakis
+We don't think people are eating bats. We do think they were eating pangolins. And the pangolin thing is still a little bit — well,, first all, yes, I don't think we should be eating those things. Correct. But just to be clear for your listeners, it's not necessarily the case that people were eating those animals. It seems like it's still a little bit unclear that the virus spent part of its time in pangolins although, top my knowledge, that's still not been resolved, but it's fairly clear that it originated in bats, and this is also a bit of a mystery. Like even in the movie Contagion, the disease begins in a bat that drops and spit on a pig. I think it's sort of what is setup in that movie. But one speculation is that the immune system of bats is maybe very similar to the immune system of humans. After all, bats are mammals. And that when viruses adjust to the immune systems of bats, when they then somehow leap to us, they're already well adjusted to infect us. That's a theory.
+
+00:39:33
+Sam Harris
+So, all of you who are against cultural appropriation, I think I'm with you here because it's culture that we should not appropriate. So, I'll get back to a timeline here. So, January 11th, China announced the first death in Wuhan. And then, January 21st, we had the first confirmed case in the US. It was a man in his 30s, I believe, who actually traveled from Wuhan and came ashore here. So, that was 10 days after we heard about the first death.
+
+00:40:08
+Nicholas Christakis
+Genetic studies now, reconstruction using genetic fila-dynamics or suggesting that there was some transit. And this goes back to stopping the air travel example you were discussing, that we can use the genetics of the cases in Seattle and what we know about mutation rates to reason backwards and discern how many introductions were there in Seattle and roughly when. And my understanding of the status of that science right now is that, roughly, in the middle of January, someone came from Wuhan to Seattle. And then, the disease started having what we call community spread. That person, we don't know who they are, but the disease was then transmitted to other people, and then still to others. And then, eventually, the epidemic broke a couple of weeks ago.
+
+00:40:54
+Sam Harris
+And so, by January 30th, the World Health Organization had declared a global health emergency, which they've only done six times since 1948. So, January 30th is when those people whose job it is to keep watch over these things decided that this thing was going global, and we had to worry about it now. Then, it seems like we had at least a month. I mean, some people would say we had two full months, but we had at least a month here to get our bearings and prepare, assuming that community spread was already happening, and that things like school closure would be more things we need to think about.
+
+00:41:38
+Sam Harris
+And now, I have a couple of timelines here. I have a timeline of Trumpian insights. At the end of February, February 24th, Trump announced that the coronavirus is very much under control in the USA. And then, he said, "Crying Chuck Schumer is complaining for publicity purposes only that I should be asking for more money than $2.5 billion to prepare for coronavirus." And there was just an absolutely transparent layer of political obfuscation and messaging essentially to the stock market rather than providing real information about this virus. February 26th, we had the first case of community transmission in the US that was acknowledged. I'm sure it happened before that, but this is when we were talking about it. And on that same day, we've got Trump saying, "I don't think it's going to come to closing the schools, especially the fact that we're going down," meaning that the rates of transmission and death are going down, not up. And then, this is more of a quote. "We're going very substantially down, not up. We have it so well under control. I mean, we've really done a very good job."
+
+00:42:46
+Nicholas Christakis
+Yeah, that's just really irresponsible. I mean, it's a lie. That's a lie. It's not true and it's really irresponsible.
+
+00:42:52
+Sam Harris
+Yeah. Okay. So, that's-
+
+00:42:53
+Nicholas Christakis
+Two things are irresponsible - not doing anything or not doing enough is irresponsible, and then misrepresenting the situation is irresponsible.
+
+00:43:02
+Sam Harris
+Right, yeah. So, this is where I come to my own psychological timeline because it's been fascinating for me to watch my own mind here and watch my sense of the situation change and cease to second guess my emotional reaction to it. And so, I actually went back and looked at my emails and texts over the last few weeks. So, I can see that on February 22nd, I was thinking about canceling some upcoming trips and still feeling fairly crazy about even thinking that way. And by February 27th, five days later, I canceled everything. And so, that was exactly 10 days ago. We're recording now on March 8th. So, for instance, 10 days ago, Tim Ferriss and I, who we were both supposed to speak at South by Southwest, he was going to interview me for an episode of his podcast, he and I decided to pull out of the conference. And it was widely perceived at that moment, again, just 10 days ago, to be slightly paranoid. And it was perceived among my circle of friends to be slightly paranoid.
+
+00:44:09
+Nicholas Christakis
+Sam is being an alarmist again.
+
+00:44:10
+Sam Harris
+Yeah, exactly. Yeah. And yet, eight days later, that is two days ago, the whole conference got canceled.
+
+00:44:18
+Nicholas Christakis
+Yes.
+
+00:44:19
+Sam Harris
+So, I've been watching this unfold, and I've been feeling more or less a week ahead of where everybody is or, at least, most of the people who I'm communicating with and most of what society is mirroring back to me, and way ahead of where the president is. On March 2nd, Trump said, "We had a great meeting today with a lot of great companies and we're going to have vaccines, I think, relatively soon." Okay. So, he's promising a vaccine soon-
+
+00:44:46
+Nicholas Christakis
+That's not true.
+
+00:44:46
+Sam Harris
+... whereas, the the only rational promises that, maybe, by the first quarter of next year. What's the most aggressive timeline that we could have a widely distributed vaccine?
+
+00:44:57
+Nicholas Christakis
+I would say 18 months. And we don't have any other vaccines against coronaviruses. I mean, the common cold is a coronavirus. If we if we could stop the common cold, people would make billions of dollars for a common cold vaccine. You think that pharmaceutical companies haven't been trying? I'm sorry. The common cold is many viruses. There are some coronaviruses-
+
+00:45:15
+Sam Harris
+Like 25%, yeah.
+
+00:45:15
+Nicholas Christakis
+Yeah.
+
+00:45:19
+Sam Harris
+Okay. So, I mean, I've heard that the most optimistic timeline is a year from now.
+
+00:45:24
+Nicholas Christakis
+Yeah. And it, probably, would ne some kind of inactive virus vaccine that we'll have. So, there are difficulties. There's a lot of steps involved in being able to produce such a vaccine. That's correct.
+
+00:45:36
+Sam Harris
+Right. So, Trump, six days ago, is saying, "There's only one hotspot, and that's pretty much in a home, as you know, in a nursing home," but this is obviously a point after which the CDC had already announced community spread in Oregon and California, at least. It's just useful to keep reiterating how unreliable the administration's talking points have been. So, here again, six days ago, we have Trump saying, "So, if we have thousands or hundreds of thousands of people that get better by just sitting around or even going to work, some even go to work, but they get better," right? And this is Trump talking so sloppily - I believe this was an interview on Fox - that it seemed like he was saying that it was okay to go to work even if you have this virus, right?
+
+00:46:23
+Nicholas Christakis
+Yes, which is wrong.
+
+00:46:24
+Sam Harris
+Right. And then, the final, this was truly phantasmagorical, on March 6th, just a few days ago, we have him at the CDC wearing a Keep America Great hat. And he's saying things like, "I love this stuff. I really get it. People are really surprised I understand this stuff." Every one of these doctors said, "How do you know so much about this?" "Maybe I have a natural ability." Now, pause for a moment. And this is maybe rightly perceived as point scoring against the president, but I mean, just pause for a moment to reflect on the fact that it is extraordinarily unlikely that even a single doctor said anything like that to him. He's standing in front of all these doctors, almost certainly lying about what they said to him in the middle of a press conference.
+
+00:47:09
+Nicholas Christakis
+But even if they syncophantically said something like that to him, the real problem is the narcissism in believing that. For example, I know a lot about certain things, and I know what I don't know, especially in my field. I'm extremely aware of my ignorance in my own field, but there are things I know about. But when I take my car to the mechanic, or when I need to have thyroid surgery, I trust those people. Like, I don't think I know more about how to fix a car than my mechanic. That would be just the height of arrogance and presumption. Or when I go to my surgeon, I say, "What do you think we should do?" And I trust that that person has devoted their life to acquiring this expertise, and that's the whole reason I'm going to an expert.
+
+00:47:49
+Nicholas Christakis
+So, the idea that President Trump, who may be a skilled businessman and maybe a skilled politician, that he would think that he knows as much about epidemiology as the people at the CDC, the real problem there is the narcissism in this individual, not even what the syncophantic behavior that may have led him to that conclusion. So, it's astonishing to me that someone would — and I think this is a broader problem in our society right now, both on the far right and on the far left, this sort of denigration of expertise, this idea that the right doesn't trust experts because they know they want to think that everything is a political decision. And the far left to actually feel similarly actually about experts. They don't like the hierarchy. They don't like the idea that someone knows more than you do.
+
+00:48:38
+Nicholas Christakis
+But this is absurd. In our society, there's some of the best scientists, if not the best scientists in the world. We feel we have the best soldiers in the world. Aren't those guys experts at doing battle? We feel we have all these people that are really terrific. We feel we have the least corrupt judges in the world. We have expert judges. You pick, we think we're great at it. Are we really going to throw that out or are we really going to think that there's nothing to say about the role of expertise? I think that's just misguided.
+
+00:49:05
+Sam Harris
+I think this is a a moment where most people are going to acquire a taste for expertise because-
+
+00:49:11
+Nicholas Christakis
+A healthy respect for expertise, yes.
+
+00:49:12
+Sam Harris
+Yeah, because we're waiting for experts to produce a vaccine for this thing.
+
+00:49:17
+Nicholas Christakis
+Yes. Yes, correct. That's right. Joe Schmo is not going to be producing a vaccine in his garage. I can assure you. Like that religious figure, I've blocked in his name that was saying that he was literally hawking some kind of substance that would cure coronavirus, he said. And it was like that awful character in Contagion that was selling for-
+
+00:49:37
+Sam Harris
+Right.
+
+00:49:37
+Nicholas Christakis
+I mean, this is-.
+
+00:49:39
+Sam Harris
+Yeah. I mean, it's this thing. The analogy to a movie is disconcerting here because this is playing out a bit like a movie. I mean, you can feel like, at several points here along the way, I felt like, okay, I'm the guy in the first act of the movie who's having an inappropriately sanguine response to facts that should be fairly alarming.
+
+00:50:02
+Nicholas Christakis
+Yes.
+
+00:50:02
+Sam Harris
+And still, who knows what part of the movie we're in here, but it's a disconcerting comparison. So, anyways. So, the last thing that Trump said at this press conference, which was truly appalling was, "Anybody who needs a test gets a test. Anybody that needs a test as of right now and yesterday, anybody that needs a test can get one."
+
+00:50:22
+Nicholas Christakis
+That's not true.
+
+00:50:22
+Sam Harris
+Now, he was saying that at the moment when the most glaring feature of this crisis was the utter failure of the government to provide tests at scale. So, I think there'd been something like 2000 tests performed in the country at that point. And the CDC wasn't even answering the questions from the press about how many tests had been performed. I mean, it had to be reconstructed by asking everyone at the state level what had happened. So, I mean, perhaps people who only follow the president, and his Twitter feed, and watch Fox News can be forgiven for not understanding what the situation really is.
+
+00:51:00
+Sam Harris
+But we have to break out of this political bubble and just encounter the facts here insofar as we can understand them. And I've had a slightly weird angle on just what we were not finding out about this in real time because I'm in Los Angeles. For the longest time, the number of cases in LA, according to the Johns Hopkins website, were reported to be at seven. But I happened to know a person who was skiing in Italy with five friends, and they all got it, and they all got on a plane, and probably infected half the plane, and they got back here. And now, at least, two of them are hospitalized. I only know one member of this group. He's not a close friend, but he's a very close friend of a very close friend. So, I have a very close friend talking to his very close friend on a daily basis who has this thing. And this is at a moment where I'm hearing that there's seven cases in Los Angeles. And apparently, I know five of them. That seems very unlikely.
+
+00:52:05
+Sam Harris
+We're also hearing that this thing is in reasonably healthy people, people who are not immunocompromised, or people who are not 80 years old, this is just like the flu. Well, this friend of a friend is now hospitalized and on a ventilator. And his other friend is hospitalized and in an induced coma, I think, because the coughing associated with it was so bad. And so, again, I'm well aware that these are two anecdotes, and this is not really data, but from this sort of ground level experience of just hearing these stories once removed, this isn't seeming like an ordinary flu. I mean, these guys are both extreme skiers, they're fit, and 50 years old. They're not in the cohort that you'd think would be on death's door associated with a flu. And so, let's just linger on this claim that, honestly, I've heard this from doctors in social situations. I had a doctor say to me, "Well, maybe we should all get this thing. We're gonna get it anyway and we'll be fine. You're fit, Sam. You'll be fine." What do you say to this notion that this is basically the flu?
+
+00:53:15
+Nicholas Christakis
+Well, it's not the flu. We know it's not the flu. We know it's more severe than the flu, first of all. Second, I've been thinking about this issue, which is like if you're gonna get it anyway, is it better to get it sooner rather than later? And it's definitely better to get it later because this relates to another topic, which I can't remember if we've discussed already, but I've been talking about this notion of flattening the epidemic here. So, imagine that you have a pulse of disease that's hitting our society, so that a million people are gonna get sick. Those million people could get sick in a very peaked way like over the course of a month, but if we implement social distancing and other procedures like school closures, then we flatten the epidemic. So, we still get a million people sick but, now, they're sick over six months, so that we have a smaller number of cases on any given day. It decompresses as the demand on our health care system and on our supply chain, so that we can actually cope with the people who are sick and need ventilation.
+
+00:54:14
+Nicholas Christakis
+So, flattening the epidemic is a really important fundamental idea in epidemiology, which is one of the reasons we engage in what is called non-pharmaceutical interventions like social distancing, and school closures, and all of that stuff. That's why we need to do it, to flatten the epidemic, so that if anyone gets sick, they get sick, fewer people are sick on any given day, and we push the cases out into the future, so that some fraction of those cases occur at a time in which we've discovered, perhaps, some drugs that could treat the disease or have a vaccine available, so we never get those cases because we've postponed them so far.
+
+00:54:49
+Nicholas Christakis
+So, there are many benefits to flattening the epidemic. Now, when you flatten epidemic, it's also the case that the people at the beginning, they also aren't putting heavy demands on the health care system. So, maybe if you're gonna get it, if you get sick sooner, that might be a sensible strategy. But actually neither from the individual nor from the collective point of view have I been able to discern any wisdom in that because first of all, you might not actually get sick anyway. So, rushing to get sick now is sort of stupid. Not everyone is gonna get the disease. And second, from a public health point of view, if you encourage people to get sick now, you might actually compress the epidemic. You're going to create a pulse upon a pulse of disease. So, no, I don't agree with your friend for multiple reasons in what they said.
+
+00:55:40
+Sam Harris
+Just to be clear, a disease that has a 5, or 10, or 15, or 20x higher mortality rate than the flu is very unlikely to be just like the flu.
+
+00:55:55
+Nicholas Christakis
+Yes. And we haven't seen this pathogen before. It's a new pathogen for us. And there's a whole other list to telegraph. There's a whole other debate about whether the pathogen — typically, these pathogens mutate and get milder as they adapt to our species and as we fight it off. Also, they tend to kill off the more vulnerable members of our species to this pathogen. It's all very sad in clinical, honestly. But we also, to recognize, there are likely to be waves of this condition. So, we're right now at the beginning of the first wave of COVID-19. But probably, we're going to see a second wave, and even a third wave perhaps. And that's very common for these types of pathogens.
+
+00:56:36
+Sam Harris
+Yeah. So, I just want to reiterate the point that you just made, but I just don't want it to get lost because it's probably the most important point here, which is even if we're all destined to get this thing or even if 75% of us are destined to get it, getting it later is absolutely better when you consider the implications for our health care system.
+
+00:57:00
+Nicholas Christakis
+Yes.
+
+00:57:00
+Sam Harris
+Because here are just the numbers, and we have something like a million hospital beds speaking now about the United States. There's something like 2.5 beds for every thousand people.
+
+00:57:11
+Nicholas Christakis
+2.8 in our country. Just to put some numbers in perspective. In Japan, it's like 13.8 beds per thousand people. So, we have we have bed capacity that's much lower than many other countries. Australia has more beds than we do. We have about as many beds as England does per capita, but we don't have a great number of beds per capita. That's correct.
+
+00:57:32
+Sam Harris
+Right. And so, just imagine, in a situation where everyone gets this more or less all at once, it's just a tsunami of illness, you have the breakdown of the health care system. You have-
+
+00:57:46
+Nicholas Christakis
+Yes.
+
+00:57:46
+Sam Harris
+Figure out just the lack of beds. You have doctors and nurses also getting sick, right, and unable to work.
+
+00:57:52
+Nicholas Christakis
+Yes. And that's also true. And we can look to China for what the health care professionals in Wuhan have been doing. And I have friends there, or friends of friends there, let's say, I have reports from there via indirectly. And it's unbelievable what those doctors did, but they've been working around the clock, taking great personal risks, many of them have died, and they're exhausted. So, it's serious. And if you even look at Seattle right now, there is concerns in Seattle they're going to run out of medical supplies to care for their patients there. We have a regional sharing system and setup in our society, so that if a hospital has a crisis and needs many dialysis machines or respirators, they can be loaned regionally. But when you have a pandemic situation where they're needed everywhere, we don't have the excess capacity for, for example, respirators. So, it's a very serious situation we're facing. And I hope and pray that we do not run out of respirators in our society, but we need to consider the possibility we do that we don't have enough of them. And the fact that we are in that situation is alarming.
+
+00:59:00
+Sam Harris
+Yeah. So, let's talk practically about what people can do and what is likely to await us in the future. And just a few more questions about the disease or about the virus. And these this is some questions we've gotten from Twitter.
+
+00:59:17
+Nicholas Christakis
+I'm on Twitter, obviously, and I follow other people, and I've been trying to send out rational information for weeks now to help people. Part of me, as I noticed the breakdown, I noticed this interesting phenomenon, which many of my scientific colleagues have been sort of stepping up. Like earlier, we talked about how they're redirecting their laboratories to see how they could help the nation. But I've also noticed that many people are like tweeting out more information. And I think they're trying to fill the vacuum, the lack of information or the spread lies. So, for weeks now, I've been trying to send out the most precise, scientifically accurate information that I can, partly to help educate the public about different things like social distancing, like why does hand-washing work, like what's the latency period for the virus, how does it spread, what are reservoirs of the virus, what about school closures? These are all topics that I think the American public needs to be educated about.
+
+01:00:07
+Sam Harris
+Yeah, yeah. Okay. So, what about the prospect of acquiring immunity for this once you have it?
+
+01:00:15
+Nicholas Christakis
+Yeah, I think there was some concerns that people could be reinfected. The best data that I've seen so far suggests that that either doesn't occur or it's extremely unlikely. So, let's just say once you're infected and recover, you have immunity for some period of time, at least a few months, probably a few years. That's still not fully known. But the fears that you could be reinfected rapidly, and there's been some case reports of this, those case reports were probably false negative tests. So, in other words, you had the condition, you had positive tests, then you had a negative test, you think, "Oh, you're cured," and then you have a positive test afterwards, probably what happened is that negative test was a false negative, now that you were reinfected.
+
+01:00:56
+Sam Harris
+Right, right.
+
+01:00:58
+Nicholas Christakis
+I mean, even the fact that we're doing this podcast is a noble or makes me happy because I think you have like a million listeners or some huge number of people. And you could think of it as a public service to try to get out some basically accurate information. I hope people listening to this will think, what's the harm in my engaging in social distancing? I could do it for a week, or two, or three. If it turns out that the epidemic fizzles out, well, I just didn't shake people's hands for a week and canceled a few meetings. On the other hand, if it turns out the epidemic is large, I've done some stuff to protect myself, and I've made a contribution to the well-being of our society. When you social distance, when you engage in these basic practices, you are interrupting the flow of the pathogen through our society. You are part of a super organism. I argued this in my book. You're part of a collective that's engaged in a battle with this virus, and you're doing your part.
+
+01:01:51
+Sam Harris
+Let's put a fine point on that recommendation because this is advice that I have taken as of two days ago. So, we decided to pull our girls out of school on Friday. So, spring break is not for three more weeks, but we're starting now and we're going to homeschool them and just to wait and see what happens because it just seemed like the school was the weak link in our world and we have, at least, one person in our family who's got chronic lung disease who really can't afford to get this virus. So, we decided we're just going to pull up the drawbridge, and we're now going to practice fairly extreme social distancing. I mean, we're not going to restaurants. I cut all travel. The TED conference is probably going to get canceled anyway on the 27th of February, I pulled out of everything I was supposed to do, and we're just going to lie low, but I'm half expecting this is going to be a fairly long experiment in social distancing. I'm wondering whether I just pulled my girls out of school for the rest of the year here, but-
+
+01:03:05
+Nicholas Christakis
+It's hard to know for sure. But let me do a thought experiment with you. If, in fact, your girls were going to be pulled out of the school for the whole year, you've just added a couple of weeks to pulling them out, and those weeks may have been the wisest weeks in the whole period.
+
+01:03:20
+Sam Harris
+Right, yeah. So, I've been following your tweets, and I took them to heart. And frankly, I felt a little late. And the only thing standing between me and doing it several days earlier was just a sense of social stigma. It's like I didn't want to be the first-
+
+01:03:39
+Nicholas Christakis
+Yeah, and you don't want to be alarmist, right? You do want to be like — but that's the problem. These are type 1/type 2 error.
+
+01:03:45
+Sam Harris
+Yeah. Everyone everyone's feeling some version of that.
+
+01:03:47
+Nicholas Christakis
+Yes.
+
+01:03:48
+Sam Harris
+They're feeling paranoid and yet ineffectual even when they're taking steps, which seem fairly extreme.
+
+01:03:56
+Nicholas Christakis
+But what I want to emphasize is that it's like so much else in our society has become polarized and dichotomized, and people think in terms of dichotomies. There are shades of behavior. So, we are not. I don't want anyone listening to this podcast to think that you and I think that people need to go to the woods to their bunkers or something. It's not what I'm saying. What I'm saying is that there there's a range of behaviors from proceed as if there's no epidemic and go about your business, the usual social interactions, to total social isolation, sail off on a sailboat or something or whatever and in between. So, what I'm recommending is adopt some simple practices already that are in between that will reduce your own personal risk and help our society. Don't shake hands. Wash your hands several times a day for what is that, the word isn't out till you sing happy birthday twice, avoid all non-essential travel and meetings. Just do those things. It helps you, it helps our society, and we'll know more in a few weeks as to what the situation is really like. That's a reasonable thing to do.
+
+01:04:56
+Sam Harris
+I mean, the other way to think about it is just probabilistically, if there are a thousand ways you might get this thing, if you cut out 900 of them, you've reduced your risk by 90%. And as you say, you've blocked that path through society to all the other people you're gonna be in contact with. So, the reason why most people can't do that is just the health argument is straightforward. It's just there's an economic and social argument that's pressing for so many people.
+
+01:05:26
+Nicholas Christakis
+Yeah, but no, But hold on. I'm not saying that people — the things that I was recommending did not include you stay home yet. What I'm saying is things that you can do right now are non-essential travel, non-essential meetings, hand-washing, avoid handshaking and physical contact. Those are things people can do and still go to work.
+
+01:05:43
+Sam Harris
+Right. Anything that can be done from home probably should be done from home, right? There are many companies where people can telecommute and-
+
+01:05:50
+Nicholas Christakis
+Yes, yes, that's right.
+
+01:05:52
+Sam Harris
+I would imagine many have not pulled the trigger on that yet as a matter of policy.
+
+01:05:56
+Nicholas Christakis
+Yes, that's right. That's exactly right. And also, in the past, let's say you shopped for food three times a week, now might be a time to consolidate all of your shopping list and go once a week. There are different sorts of ways you can manage your life to reduce social contact for a while until we see what's happening with this thing. That's correct. And I don't see that as alarmist. I think that's just common sense you can do and that doesn't require you to quit your job or lose your income yet.
+
+01:06:22
+Sam Harris
+Right. So, a related question there. It's just, what about panic and-
+
+01:06:28
+Nicholas Christakis
+Panic is bad.
+
+01:06:29
+Sam Harris
+What alarms me is that when government is clearly — like in any of these press conferences, when the purpose is transparently to reassure without actually giving good information, they're just trying to dampen panic, that is in the uncanny valley of reassurance and it actually is just frankly alarming to see people obfuscating for the purpose of dampening emotional or arousal. So, how do you think the government and scientists should speak about this, given that panic and the reality of social contagion is also worth worrying about?
+
+01:07:08
+Nicholas Christakis
+Yes. So, how do you think we've been speaking about it? Do you think that when I agreed to come on, I was trying to make sure that I communicated factual information, that I was balanced, and that I was not alarmist? And I hope I have not been alarmist, and I hope I've communicated factual information in a balanced way. That's my objective. And your listeners and you can decide that. But we have very sober-minded scientists that speak in calm and rational ways. For example, Dr. Anthony Fauci. And these are the sorts of people that if I were president, I would be putting before the public. These people will, sort of like when they're of military importance, the generals that speak, they may be misinformed, they may not know everything, but they speak in measured and serious ways about the matters of military operations. And I think that's what we need right now. And we have such people in our government and in our society. And I think we should be listening to them and we should be allowing them to speak.
+
+01:08:07
+Sam Harris
+It would be a related benefit to social distancing, if we had a new norm around how people behaved when they were sick with anything, with anything infectious, a cold or a flu, if people simply did not go to work sick, that would exert an evolutionary pressure on all these bugs to become less symptomatic, right?
+
+01:08:28
+Nicholas Christakis
+Well, I mean, that's another thing, relatedly, that we should be doing in our society. If you don't have an essential health problem, you should not be seeking medical care right now. Not only because you don't want to go to a health care and be exposed to other people, but in order to unburden the health care system. What the Chinese did, which was unbelievable, is they moved 50% of their medical care online when the epidemic struck. Anyone that just needed a prescription refill, for example, they just started doing that online. You don't have to go see your doctor to get your heart medication. Just call your doctor and say, "Okay, we're going to do that." So, it decompress as the health system, frees the doctors up and nurses up to do other stuff that's more important, and it reduces the risk of exposure, the social mixing, especially of sick patients. So, people listening to this, they should say, "If I'm not seriously ill or I have routine health care stuff, I should help my country by not seeking medical care right now." Now is not the time to do that.
+
+01:09:26
+Sam Harris
+Yeah. But the point I was making is that if social distancing were the norm whenever people got sick, personally, if you just didn't go to work when sick, that would exert evolutionary pressure on all of these bugs, whether bacteria or viruses to mitigate their symptoms, so that like colds wouldn't be as bad if you only spread them when they were truly almost undetectable, from your point of view. So, what do you do with the fact though that it seems that people are infectious prior to being asymptomatic and perhaps for as long as two weeks? I mean, that seems like a-
+
+01:10:03
+Nicholas Christakis
+No, I don't think it's that long. I mean, we don't know yet exactly. That's still unknown. So, there are two epidemiologically relevant facts here. There's something known as the incubation period. That's from the time you're infected to the time you're symptomatic. And then, there's something known as the latent period. And that's from the time you're not infectious to the time you become infectious. And the difficult thing is if the latent period ends before the incubation period ends. In other words, if you transition to being infectious before you transition to being symptomatic. We don't know for a fact yet whether asymptomatic coronavirus patients can transmit the disease. And if so, for how long? But there are people actively working on it. But it's not more than a couple of days, even if it is. But if that's the case, that's worrisome because that means people are out there spreading the disease, they can't even use their own symptoms as a heuristic for staying at home.
+
+01:11:01
+Sam Harris
+Right. What do you see as the possibility of our taking extreme steps of the sort that China or even Italy have taken at this point to contain the spread in any given city or any given region?
+
+01:11:16
+Nicholas Christakis
+Well, I don't think it's culturally or politically viable for us to do what the Chinese have done. I don't know how similar we are to the Italians. My understanding of the authority that governors of our States have, and I don't know what the federal authorities are, but I'm pretty sure the State Governors have authorities to basically shut stuff down in the public interest and enforce it with the State National Guard sort of power. So, rightly, the power of quarantine exists in our society. And I'm not a legal expert, so I don't know the details of where those powers are vested and how they're enforced. But I can imagine that there would be a lot of political will to do such things if the situation got really bad. There would be checkpoints on roads to reduce transit. The president can order the flights not to fly, and this has been modeled. Internal restrictions on an on air traffic have been modeled as a way to reduce the epidemic. So, I don't know, I can't forecast what would happen. But I do believe the government at multiple levels has the authority to do such things as it should. As a society, if we're trying to confront this, we need to do it in an ordered cooperative way.
+
+01:12:30
+Sam Harris
+There's a point that I think we might have made, although perhaps we dropped it in differentiating this from influenza. From everything we know, coronavirus is more infectious than influenza.
+
+01:12:43
+Nicholas Christakis
+It's difficult to measure. So, the so-called R nought or, actually, more precisely, something called the effective reproductive rate, which is the number in a steady state, the number of new cases for every old case, people are estimating is between 2 and 4. So, we don't know yet exactly how it is. And just to be clear, that number is related to intrinsic properties of the virus, but it's not solely determined by that. So, for example, the transmission rate of a pathogen depends, for example, on the extent of social mixing. If I suddenly obliged everyone to sit in a prison cell, if one person got sick, they wouldn't transmit it to anyone else. So, it's something about how we're organized socially that determines the RE, the effective reproductive rate.
+
+01:13:30
+Nicholas Christakis
+And so, we estimate right now that it's around between 2 and 4, which is high. The Chinese, at the beginning of the epidemic, there was a nice paper that was just written by a group of Chinese scholars in collaboration with some investigators at the Harvard School of Public Health, at the beginning of the epidemic, if I'm remembering these numbers correctly, they estimated the effective reproductive rate at around 3.8. So, for every sick person, 3.8 new sick people were created. But because of their social engineering in China, where they, as we discussed earlier, had this incredible quarantine basically that's nationwide, they have driven that down to like below one. And when you get the number below one, that's when the epidemic peters out because cases aren't replacing themselves.
+
+01:14:19
+Sam Harris
+What about the prospect that this is essentially always gonna be with us once it's a pandemic?
+
+01:14:25
+Nicholas Christakis
+Yes, that's what's going to happen.
+
+01:14:26
+Sam Harris
+So, if it's always with us, and it's much worse than flu — I mean, flu, we need a new flu vaccine every year because the old one didn't do the trick because it's mutated. What's a rational picture of the future if, in fact, this just keeps circling the globe and mutating, either getting worse or getting better depending? What do we expect is harder here?
+
+01:14:52
+Nicholas Christakis
+It's hard to know for sure. Many experts believe that this will join the existing corona viruses that afflict humans or be like another common cold type virus. We've just now added a pathogen to the list of pathogens that circulates in human beings. It'll become what's known as endemic. Always there in us. It's a little unclear still. Earlier, we discussed how the virus might become less problematic as time goes by, as it adapts to us, and we modify it with our collective immune systems fighting it off. So, I don't think it's going to disappear completely. I think it will remain in the human population. It's hard, very hard. I'm not willing to forecast how serious it will remain as time goes by. But I think we're going to have this current wave, which I think there's a good chance it will be serious. And then, we will have another wave or two. And in a few years, we'll know what is the status of this virus with respect to us, like other viruses that affect us.
+
+01:15:52
+Sam Harris
+Can you think of something we haven't touched that you think we should be hitting?
+
+01:15:56
+Nicholas Christakis
+No. I mean, I think we've covered a lot of things. We've covered some basic facts about the virus and what it is that we can do. We've talked about the prospects for pharmaceutical interventions versus non-pharmaceutical interventions, which we clearly need to implement as a society. We've sort of benchmark the severity of the condition. We've talked about flattening the epidemic, which is really important. We've covered, I think, the gamut of sort of basic epidemiology as such as it is of epidemic or pandemic influenza. I think I'd like to end on an optimistic note. I mean, I think our species, this is not the first time-
+
+01:16:32
+Sam Harris
+It's already not sounding optimistic if you're going to the species level.
+
+01:16:39
+Nicholas Christakis
+Okay, yes. Good point.
+
+01:16:39
+Sam Harris
+It's really bad.
+
+01:16:40
+Nicholas Christakis
+Our society, it's not the first time America has been afflicted with a pandemic disease. And I think we will see the other side of this. But I think it's going to take a lot of working together to address it. I think it'll take the full attention of our political leaders and of our scientific establishment. Our commercial sector is going to have to rise to the occasion to build more respirators, and more masks, and whatever else we need in order to confront the condition. And I think people on the street are going to have to adjust their lifestyle for a while in order to contribute to our society, in order to confront this disease. And I hope that it is much milder than it could be. And there's a range of outcomes, as we've discussed, and I hope it's on the milder end of that range.
+
+01:17:29
+Sam Harris
+Yeah, yeah. As do I. I certainly hope that my current state of mind seems like an overreaction in retrospect. I mean, the only point in my life that had an analogous feeling was 9/11, where it's just like, "Okay, this is a moment in history. This is not life as you have taken it for granted year after year."
+
+01:17:53
+Nicholas Christakis
+I think this could be a moment in history. I think in a few months, we'll know, whether in in the early spring or early winter of 2020, the world was afflicted with a pandemic and a serious pandemic. I mean, pandemic, by the way, just means an epidemic that strikes multiple region. And you could have a mild pandemic or a severe pandemic. That's a different topic. And so, I think we'll know within a few months how serious this is. And we'll all remember where we were when we first heard about it. Or if it's mild, we'll forget. Nobody remembers very much about SARS and H1N1. And maybe, it'll go that way. And I hope it does.
+
+01:18:34
+Sam Harris
+Okay. Well, I will be touching this topic again, no doubt. And-
+
+01:18:37
+Nicholas Christakis
+Thank you.
+
+01:18:39
+Sam Harris
+... you and I will be talking about happier things at some point. I trust.
+
+01:18:42
+Nicholas Christakis
+Thank you for having me again, Sam. And thank you so much.
+
+01:18:45
+Sam Harris
+Yeah, yeah. To be continued.
