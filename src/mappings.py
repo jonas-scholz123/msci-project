@@ -225,6 +225,7 @@ def get_tag2full_label(corpus, detail_level):
                 'arp': 'Dispreferred answers',
                 't3': '3rd-party-talk',
                 'oo,cc,co': 'Offers, Options Commits',
+                'oo_co_cc': 'Offers, Options Commits',
                 't1': 'Self-talk',
                 'bd': 'Downplayer',
                 'aap/am': 'Maybe/Accept-part',
