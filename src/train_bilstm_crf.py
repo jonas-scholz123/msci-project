@@ -1,7 +1,7 @@
 import os
 os.environ["TF_FORCE_GPU_ALLOW_GROWTH"]="true"
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
 
+import numpy as np
 from keras.preprocessing.text import Tokenizer
 import tensorflow as tf
 
@@ -9,6 +9,8 @@ from utils import get_embedding_matrix, get_tokenizer, make_model_readable_data,
     chunk, load_corpus_data
 from mappings import get_id2tag
 from bilstm_crf import get_bilstm_crf_model
+
+from sklearn.model_selection import train_test_split
 
 import config
 
@@ -18,6 +20,8 @@ max_nr_words = config.data["max_nr_words"]
 corpus = config.corpus["corpus"]
 detail_level = config.corpus["detail_level"]
 batch_size = config.model["batch_size"]
+test_fraction = config.model["test_fraction"]
+validation_fraction = config.model["validation_fraction"]
 
 conversations, labels = load_corpus_data(corpus, detail_level)
 
@@ -31,6 +35,8 @@ word2id = tokenizer.word_index
 
 X,y = make_model_readable_data(conversations, labels, tokenizer,
         max_nr_utterances, max_nr_words)
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.1, shuffle=True)
 
 # import pretrained GloVe embeddings
 embedding_matrix = get_embedding_matrix("../data/embeddings/glove.840B.300d.txt",
@@ -49,5 +55,5 @@ model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
 if os.path.exists(checkpoint_path):
     model.load_weights(checkpoint_path)
 
-model.fit(X, y, batch_size=batch_size, epochs=3, validation_split=0.1,
+model.fit(X_train, y_train, batch_size=batch_size, epochs=3, validation_data=(X_test, y_test),
     callbacks=[model_checkpoint_callback])
