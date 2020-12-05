@@ -47,6 +47,42 @@ def make_adjacency_matrix(tag_sequences, n, normalise = "next"):
 
     return adj_matrix
 
+def timestamp_to_datetime(timestamp):
+    return datetime.strptime(timestamp, "%H:%M:%S")
+
+
+def get_fractional_time(current_timestamp, biggest_time):
+    try:
+        current_seconds = (biggest_time - timestamp_to_datetime(current_timestamp)).total_seconds()
+        total_seconds = (biggest_time - timestamp_to_datetime("00:00:00")).total_seconds()
+        return 1 - current_seconds/total_seconds
+    except:
+        return current_timestamp
+
+def enhance_transcript_df(df):
+    #calc relative time
+    biggest_time = timestamp_to_datetime(df.loc[df.shape[0] - 1, "timestamp"])
+    df["relative_time"] = (
+        df["timestamp"].apply(get_fractional_time, args = (biggest_time, )))
+
+    #explicitly find speaker change positions
+    speaker_change = np.zeros(df.shape[0], dtype=np.int32)
+    speakers = df["speaker"]
+    for i, speaker in speakers[:-1].iteritems():
+        if speaker != speakers[i + 1]:
+            speaker_change[i + 1] = 1
+    df["speaker_change"] = speaker_change
+
+    # length of utterances in seconds
+    timestamps = df["timestamp"]
+    lengths = np.zeros(df.shape[0])
+    for i, timestamp in timestamps[:-1].iteritems():
+        next_timestamp = timestamps[i + 1]
+        lengths[i] = (timestamp_to_datetime(next_timestamp) - timestamp_to_datetime(timestamp)).total_seconds()
+    df["utterance_length"] = lengths
+
+    return df
+
 max_nr_utterances = config.data["max_nr_utterances"]
 corpus = config.corpus["corpus"]
 detail_level = config.corpus["detail_level"]
