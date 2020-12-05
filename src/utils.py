@@ -5,6 +5,7 @@ import nltk
 import operator
 import re
 from tqdm import tqdm
+import pandas as pd
 
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
@@ -235,10 +236,11 @@ def load_all_transcripts(transcript_dir = "../transcripts/", chunked = True,
     chunk_size = 100):
 
     transcripts = []
+
     for fpath in os.listdir(transcript_dir):
-        utterances = load_one_transcript(transcript_dir + fpath, chunked = chunked,
-            chunk_size=chunk_size)
-        transcripts.append(utterances)
+        entries = load_one_transcript(transcript_dir + fpath,
+            chunked = chunked, chunk_size=chunk_size)
+        transcripts.append(entries)
 
     return transcripts
 
@@ -367,38 +369,68 @@ def plot_confusion_matrix(matrix, classes,  title='', matrix_size=10, normalize=
 
     return fig
 
-def _is_timestamp(s):
-    return len(re.findall("[0-9]{2}:[0-9]{2}", s)) > 0
+def _find_timestamp(s):
+    timestamps = re.findall(r'\d{2}:\d{2}:\d{2}|\d{2}:\d{2}', s)
+    if timestamps:
+        timestamp = timestamps[0]
+        if len(timestamp) == 5: #if of shape "01:37"
+            timestamp = "00:" + timestamp
+        return timestamp
+    return None
+
+def _find_speaker(text, all_speakers):
+    for speaker in all_speakers:
+        potential_speaker = re.findall(speaker, text.lower())
+        if potential_speaker:
+            return potential_speaker[0]
+    return None
 
 def get_speakers():
     transcript_paths = os.listdir("../transcripts")
     transcript_names = [p.split(".")[0] for p in transcript_paths]
     speakers = ([" ".join(n.split("_")[0:2]) for n in transcript_names] +
                     [" ".join(n.split("_")[2:4]) for n in transcript_names])
-    speakers = list(set(speakers))
-    return [name.split(" ")[0].capitalize() + " "
-                    + name.split(" ")[1].capitalize() for name in speakers]
+    return list(set(speakers))
 
 def load_one_transcript(fpath, chunked = True, chunk_size = 100):
     with open(fpath, 'r') as f:
-        transcript = f.read()
+        transcript = f.read().lower().replace("...", "")
     transcript = transcript.split("\n")
 
-    speakers = get_speakers()
-    conversation = [line for line in transcript if
-        not _is_timestamp(line)
-        and not line in speakers
-        and not line == ""]
-    conversation = " ".join(conversation).lower().replace("...", "")
-    conversation = np.asarray(nltk.word_tokenize(conversation))
+    all_speakers = get_speakers()
+    speakers = []
+    timestamps = []
+    conversation = []
 
-    sentence_boundary_indices = []
-    for i, token in enumerate(conversation):
-        if token in [".", "?", "!", ";"]:
-            sentence_boundary_indices.append(i + 1)
+    current_timestamp = ""
+    current_speaker = ""
 
-    utterances = [" ".join(u) for u in np.split(conversation, sentence_boundary_indices)]
+    entries = []
+    for line in transcript:
+        if line == "":
+            continue
+
+        if _find_timestamp(line):
+            current_timestamp = _find_timestamp(line)
+
+        if _find_speaker(line, all_speakers):
+            current_speaker = _find_speaker(line, all_speakers)
+
+        if not (_find_speaker(line, all_speakers) or _find_timestamp(line)):
+            split_line = re.split("([.?;!])", line)
+            utterance_texts = split_line[::2][:-1]
+            utterance_signs = split_line[1::2]
+
+            for i in range(len(utterance_texts)):
+                utterance = "".join([utterance_texts[i], utterance_signs[i]])
+                utterance = " ".join(nltk.word_tokenize(utterance))
+                entries.append((utterance, current_speaker, current_timestamp))
 
     if chunked:
-        utterances = split_into_chunks(utterances, chunk_size)
-    return utterances
+        entries = split_into_chunks(entries, chunk_size)
+
+    return entries
+
+if __name__ == '__main__':
+    transcripts = load_all_transcripts("../transcripts/", chunked = True)
+    transcripts[0][0]
