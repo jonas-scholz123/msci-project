@@ -16,7 +16,7 @@ To do!
 
 ### What is a Dialogue Act?
 
-Dialogue acts are an the social act that a phrase represents. An example would be
+Dialogue acts are the social act that a phrase represents. An example would be
 
   * "Hello!" -> Greeting
   * "I think it's going to rain" -> Statement: opinion
