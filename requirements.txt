@@ -33,7 +33,7 @@ pandas == 0.25.3
 scikit_learn == 0.23.1
 
 # src/analyse_transcripts.py: 237
-scipy == 1.3.2
+scipy == 1.4.1
 
 # src/analyse_transcripts.py: 2
 # src/topics.py: 3
@@ -43,14 +43,11 @@ seaborn == 0.10.1
 # src/train_bilstm_crf.py: 6
 tensorflow == 2.3.0
 
-# src/topics.py: 1
-tensorflow-hub == 0.11.0
-
-# src/topics.py: 1
-tf-hub-nightly == 0.12.0.dev202101120006
-
 # src/bilstm_crf.py: 5
 tf2crf == 0.1.27
+
+# src/topics.py: 1
+tf_hub_nightly == 0.12.0.dev202101120006
 
 # src/analyse_transcripts.py: 9
 # src/utils.py: 7
