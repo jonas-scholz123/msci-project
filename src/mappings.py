@@ -229,6 +229,7 @@ def get_tag2full_label(corpus, detail_level):
                 't1': 'Self-talk',
                 'bd': 'Downplayer',
                 'aap/am': 'Maybe/Accept-part',
+                'aap_am': 'Maybe/Accept-part',
                 '^g': 'Tag-Question',
                 'qw^d': 'Declarative Wh-Question',
                 'fa': 'Apology',
