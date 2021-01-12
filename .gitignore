@@ -4,7 +4,6 @@ archive/
 data/
 dialogue-understanding/
 logs/
-trained_model/
 DAH/
 swda/
 Probabilistic-RNN-DA-Classifier/
