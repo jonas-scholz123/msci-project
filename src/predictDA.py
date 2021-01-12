@@ -50,7 +50,6 @@ def make_annotated_transcript(transcript, verbose = False):
     # import pretrained GloVe embeddings
     embedding_matrix = get_embedding_matrix("../data/embeddings/glove.840B.300d.txt",
         word2id, force_rebuild=False) #set force rebuild to False when not changing total vocabulary
-
     os.environ["TF_FORCE_GPU_ALLOW_GROWTH"]="true"
 
     model = get_bilstm_crf_model(embedding_matrix, max_nr_utterances, max_nr_words, n_tags)
@@ -63,6 +62,8 @@ def make_annotated_transcript(transcript, verbose = False):
         model.load_weights(checkpoint_path)
         if verbose:
             print("Done!")
+    else:
+        print("Warning: no model found in path, using untrained model!")
 
     if verbose:
         print("Making annotations...")
