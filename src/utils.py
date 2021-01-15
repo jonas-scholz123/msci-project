@@ -133,8 +133,11 @@ def get_all_texts():
     all_texts = []
     all_texts += sum(load_mrda_data()[0], [])
     all_texts += sum(load_swda_data()[0], [])
-    all_texts += sum(load_all_transcripts(chunked = False), [])
-    all_texts = [" ".join(nltk.word_tokenize(s)) for s in all_texts]
+    transcripts = load_all_transcripts(chunked = False)
+    transcript_texts = [entry[0] for t in transcripts for entry in t]
+    all_texts += transcript_texts
+
+    all_texts = [(" ".join(nltk.word_tokenize(s))).lower() for s in all_texts]
     return all_texts
 
 def turn_tags_to_id(labels, tag2id):
