@@ -19,6 +19,11 @@ corpus = dict(
     detail_level = 0, #for mrda, 0, 1, 2 from lowest detail to highest
 )
 
+paths = dict(
+    transcripts = '../transcripts/',
+    transcript_dfs = '../processed_transcripts/',
+)
+
 # disable huge number of information prints by tensorflow
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
