@@ -74,7 +74,7 @@ def make_annotated_transcript(transcript, verbose = False):
         annotated_transcript: list of tuples (utterance, DA(utterance))
     '''
 
-    transcript_text = [[e[0] for e in chunk] for chunk in transcript]
+    transcript_text = [[e[0].lower() for e in chunk] for chunk in transcript]
     total_nr_utterances = len(sum(transcript_text, []))
     #get id2tag map and inverse
     id2tag = get_id2tag(corpus, detail_level = detail_level)
@@ -96,8 +96,11 @@ def make_annotated_transcript(transcript, verbose = False):
                     offset_flattened_X.shape[-1]))
 
     # import pretrained GloVe embeddings
+
+    #WARNING: if you force rebuild, the embedding matrix may change and you may need to retrain the Neural Network!
     embedding_matrix = get_embedding_matrix("../data/embeddings/glove.840B.300d.txt",
         word2id, force_rebuild=False) #set force rebuild to False when not changing total vocabulary
+
     os.environ["TF_FORCE_GPU_ALLOW_GROWTH"]="true"
 
     model = get_bilstm_crf_model(embedding_matrix, max_nr_utterances, max_nr_words, n_tags)
