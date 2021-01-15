@@ -10,6 +10,10 @@ from predictDA import get_all_annotated_transcripts
 from tqdm import tqdm
 from analyse_transcripts import enhance_transcript_df
 import pandas as pd
+import config
+
+pd.options.display.width = 0
+pd.options.display.max_rows = None
 
 #%%
 class Network:
@@ -92,7 +96,8 @@ def plot_similarity(labels, features, rotation):
         vmax=1,
         cmap="YlOrRd")
     g.ax_heatmap.set_title("Clustered Semantic Textual Similarity")
-    plt.savefig("./similarity.pdf")
+    plt.savefig(config.paths["figures"] + "similarity.pdf")
+#%%
 
 #some test sentences
 sentences = [
@@ -130,9 +135,7 @@ if __name__ == "__main__":
     #%%
 
     plot_similarity(test_sentences, embed(test_sentences), 90)
-    fpath = "../transcripts/joe_rogan_elon_musk.txt"
-    transcripts = load_all_transcripts()
-    transcript_dfs = [make_annotated_transcript(t) for t in tqdm(transcripts)]
+    transcript_dfs = get_all_annotated_transcripts(force_rebuild=False)
     for transcript_df in transcript_dfs:
         enhance_transcript_df(transcript_df)
     #%%
@@ -152,19 +155,6 @@ if __name__ == "__main__":
 
     extractor.load_document(" ".join(valid_sentences))
 
-    extractor.candidate_selection(pos={"NOUN", "PROPN", "ADJ"})
-
-    extractor.candidate_weighting()
-
-    for (keyphrase, score) in extractor.get_n_best(n=1000, stemming=True):
-        print(keyphrase, score)
-
-    #%%
-
-    extractor = pke.unsupervised.TopicRank()
-
-    extractor.load_document(" ".join(valid_sentences))
-
     extractor.candidate_selection(pos={"NOUN", "PROPN"})
 
     stem = SnowballStemmer("english").stem
@@ -180,9 +170,60 @@ if __name__ == "__main__":
 
     tdf["key_words"] = sentence_keywords
 
-    tdf.head(50)
-#%%
+    tdf
 
+#%%
+import nltk
+from nltk.corpus import wordnet as wn
+from nltk.corpus import stopwords
+
+transcript_dfs = get_all_annotated_transcripts(force_rebuild=False)
+for transcript_df in transcript_dfs:
+    enhance_transcript_df(transcript_df)
+
+tdf = transcript_dfs[2]
+
+filler_das = ['Appreciation', 'Agree/Accept', 'Acknowledge (Backchannel)',
+    'Repeat-phrase', 'Yes answers', 'Response Acknowledgement',
+    'Affirmative non-yes answers', 'Backchannel in question form',
+    'Negative non-no answers', 'Uninterpretable', 'Signal-non-understanding',
+    'Hold before answer/agreement', 'Action-directive', 'Thanking']
+
+stopwords = set(stopwords.words())
+
+
+sentence_keywords = []
+for entry in tdf["utterance"]:
+    keywords = []
+    for word, pos in nltk.pos_tag(nltk.word_tokenize(entry)):
+        #sometimes 1 letter words are misclassified as nouns and added
+        if (pos in ["NN", "NNP", "NNS", "CD"] and len(word) > 1
+            and word not in stopwords):
+
+            keywords.append(word)
+    sentence_keywords.append(keywords)
+
+tdf["key_words"] = sentence_keywords
+
+stc = "Archangel 12, the precursor to the sr71"
+tok = nltk.word_tokenize(stc)
+nltk.pos_tag(tok)
+tdf
+
+tdf.loc[~tdf["key_words"].astype(bool), "key_words"] = None
+tdf
+tdf.loc[tdf["da_label"].isin(filler_das), "key_words"] = None
+tdf.head(100)
+
+# temporarily set all entries without keywords to have the same keywords as previous:
+current_keywords = ["NO KEYWORDS YET"]
+for i, keywords in enumerate(tdf["key_words"]):
+    if keywords:
+        current_keywords = keywords
+    else:
+        tdf.at[i, "key_words"] = current_keywords
+
+#%%
 
 
 
@@ -314,7 +355,7 @@ if __name__ == "__main__":
     plt.ylim(y_min, y_max)
     plt.xticks(())
     plt.yticks(())
-    plt.savefig("kmeans.pdf")
+    plt.savefig(config.paths["figures"] + "kmeans.pdf")
     plt.show()
 
     #%%
@@ -417,5 +458,5 @@ for c in np.unique(cluster_index):
 plt.rcParams.update({'font.size':3})
 #plt.xlim([0, map_dim])
 #plt.ylim([0, map_dim])
-plt.savefig("som.pdf")
+plt.savefig(config.paths["figures"] + "som.pdf")
 plt.plot()
