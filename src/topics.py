@@ -5,7 +5,11 @@ import matplotlib.pyplot as plt
 from pprint import pprint
 from collections import defaultdict
 from sklearn.cluster import DBSCAN
-from utils import load_one_transcript
+from utils import load_one_transcript, load_all_transcripts
+from predictDA import get_all_annotated_transcripts
+from tqdm import tqdm
+from analyse_transcripts import enhance_transcript_df
+import pandas as pd
 
 #%%
 class Network:
@@ -71,8 +75,14 @@ def make_similarity_matrix(labels, features):
     return np.inner(features, features)
 
 def plot_similarity(labels, features, rotation):
-    plt.figure(figsize = (20, 12))
     corr = np.inner(features, features)
+    #fontsize_pt = plt.rcParams['ytick.labelsize']
+    #dpi = 72.27
+    #matrix_height_pt = fontsize_pt * len(features)
+    #matrix_height_in = matrix_height_pt / dpi
+    #print("plotting matrix of size ", matrix_height_in)
+    plt.figure(figsize = (20, 20))
+
     sns.set(font_scale=1.2)
     g = sns.clustermap(
         corr,
@@ -82,6 +92,7 @@ def plot_similarity(labels, features, rotation):
         vmax=1,
         cmap="YlOrRd")
     g.ax_heatmap.set_title("Clustered Semantic Textual Similarity")
+    plt.savefig("./similarity.pdf")
 
 #some test sentences
 sentences = [
@@ -89,7 +100,7 @@ sentences = [
     "I'll be back in half an hour.",
     "Traffic is awful!"
 ]
-sentences = [
+test_sentences = [
     # Smartphones
     "I like my phone",
     "My phone is not good.",
@@ -117,23 +128,208 @@ if __name__ == "__main__":
     embed = hub.load("https://tfhub.dev/google/universal-sentence-encoder/4")
     print("Done")
     #%%
+
+    plot_similarity(test_sentences, embed(test_sentences), 90)
     fpath = "../transcripts/joe_rogan_elon_musk.txt"
-    transcript = load_one_transcript(fpath, chunked = False)[:100]
-    sentences = [s[0] for s in transcript]
+    transcripts = load_all_transcripts()
+    transcript_dfs = [make_annotated_transcript(t) for t in tqdm(transcripts)]
+    for transcript_df in transcript_dfs:
+        enhance_transcript_df(transcript_df)
+    #%%
+    tdf = transcript_dfs[2]
+    filler_das = ['Appreciation', 'Agree/Accept', 'Acknowledge (Backchannel)',
+        'Repeat-phrase', 'Yes answers', 'Response Acknowledgement',
+        'Affirmative non-yes answers', 'Backchannel in question form',
+        'Negative non-no answers', 'Uninterpretable', 'Signal-non-understanding',
+        'Hold before answer/agreement', 'Action-directive', 'Thanking']
+
+    sentences = tdf["utterance"]
+    valid_sentences = tdf[~tdf["da_label"].isin(filler_das)]["utterance"]
+
+    import pke
+    from nltk.stem.snowball import SnowballStemmer
+    extractor = pke.unsupervised.TopicRank()
+
+    extractor.load_document(" ".join(valid_sentences))
+
+    extractor.candidate_selection(pos={"NOUN", "PROPN", "ADJ"})
+
+    extractor.candidate_weighting()
+
+    for (keyphrase, score) in extractor.get_n_best(n=1000, stemming=True):
+        print(keyphrase, score)
+
+    #%%
+
+    extractor = pke.unsupervised.TopicRank()
+
+    extractor.load_document(" ".join(valid_sentences))
+
+    extractor.candidate_selection(pos={"NOUN", "PROPN"})
+
+    stem = SnowballStemmer("english").stem
+
+    sentence_keywords = []
+
+    for entry in tdf["utterance"]:
+        keywords = []
+        for word in entry.split():
+            if stem(word.lower()) in extractor.candidates:
+                keywords.append(word)
+        sentence_keywords.append(keywords)
+
+    tdf["key_words"] = sentence_keywords
+
+    tdf.head(50)
+#%%
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     #embed using google sentence encoder
     embeddings = embed(sentences)
+    valid_embeddings = embed(valid_sentences)
 
     #approach 1: use density based clustering algorithm to cluster sentences into topics
     sim_m = make_similarity_matrix(sentences, embeddings)
 
-    cluster_labels = DBSCAN(eps = 1.4, min_samples = 1).fit_predict(sim_m) #eps is sensitivity
+    #cluster_labels = DBSCAN(eps = 0.5, min_samples = 2, metric = "cosine").fit_predict(embeddings) #eps is sensitivity
+    cluster_labels = DBSCAN(eps = 5, min_samples = 2).fit_predict(sim_m) #eps is sensitivity
 
+    tdf["topic_label"] = cluster_labels + 1
+    valid_sentence = ~tdf["da_label"].isin(filler_das)
+    tdf["topic_label"] *= valid_sentence #if filler sentence has topic "0"
+    plot_similarity(valid_sentences[:100], valid_embeddings[:100], 90) #visualised here
+
+    (tdf["topic_label"] != 0).sum()/len(tdf)
+
+    #%% Linkage approach
+
+    #%% OPTICS APPROACH
+
+    from sklearn.cluster import OPTICS
+
+    clustering = OPTICS(min_samples=1, metric="cosine").fit(embeddings)
+
+    (clustering.labels_ == 0).sum()
+
+    clustering.labels_
+
+    #%%
+    from sklearn.decomposition import PCA
+
+    pca = PCA(n_components=2)
+    embeddings_2d = pca.fit_transform(embeddings)
+
+    plt.figure(figsize = (20, 20))
+    plt.rcParams.update({'font.size':3})
+    for text, topic, (x, y) in zip(tdf["utterance"], tdf["topic_label"], embeddings_2d):
+        plt.scatter(x, y, c = "C" + str(topic))
+        #plt.text(x, y + 0.1, text)
+
+
+    plt.show()
+
+
+    #%% k-means approach
+    from sklearn.cluster import KMeans
+
+    kmeans = KMeans(init="k-means++", n_clusters = 10, n_init=4)
+    kmeans.fit(embeddings)
+
+    from sklearn.decomposition import PCA
+
+    pca = PCA(n_components=2)
+    embeddings_2d = pca.fit_transform(embeddings)
+
+    k_means_2d = pca.transform(codebook)
+
+    plt.figure(figsize = (20, 20))
+    plt.rcParams.update({'font.size':3})
+
+    for (x, y), text in zip(embeddings_2d, sentences):
+        plt.scatter(x, y, c = "grey")
+        plt.text(x, y + 0.1, text)
+
+    for x,y in k_means_2d:
+        plt.scatter(x, y, c = "red")
+
+    plt.savefig("pca.pdf")
+    plt.show()
+
+    #%%
+
+    reduced_data = PCA(n_components=2).fit_transform(embeddings)
+    kmeans = KMeans(init="k-means++", n_clusters=30, n_init=4)
+    kmeans.fit(reduced_data)
+
+    # Step size of the mesh. Decrease to increase the quality of the VQ.
+    h = .02     # point in the mesh [x_min, x_max]x[y_min, y_max].
+
+    # Plot the decision boundary. For that, we will assign a color to each
+    x_min, x_max = reduced_data[:, 0].min() - 1, reduced_data[:, 0].max() + 1
+    y_min, y_max = reduced_data[:, 1].min() - 1, reduced_data[:, 1].max() + 1
+    xx, yy = np.meshgrid(np.arange(x_min, x_max, h), np.arange(y_min, y_max, h))
+
+    # Obtain labels for each point in mesh. Use last trained model.
+    Z = kmeans.predict(np.c_[xx.ravel(), yy.ravel()])
+
+    # Put the result into a color plot
+    Z = Z.reshape(xx.shape)
+    plt.figure(figsize=(20, 20))
+    plt.clf()
+    plt.imshow(Z, interpolation="nearest",
+               extent=(xx.min(), xx.max(), yy.min(), yy.max()),
+               cmap=plt.cm.Paired, aspect="auto", origin="lower")
+
+    plt.plot(reduced_data[:, 0], reduced_data[:, 1], 'k.', markersize=2)
+    # Plot the centroids as a white X
+    centroids = kmeans.cluster_centers_
+    plt.scatter(centroids[:, 0], centroids[:, 1], marker="x", s=169, linewidths=3,
+                color="w", zorder=10)
+    plt.xlim(x_min, x_max)
+    plt.ylim(y_min, y_max)
+    plt.xticks(())
+    plt.yticks(())
+    plt.savefig("kmeans.pdf")
+    plt.show()
+
+    #%%
     clusters = defaultdict(list)
-    for cl, sentence in zip(cluster_labels, sentences):
+    for cl, sentence in zip(tdf["topic_label"], tdf["utterance"]):
+        if cl == 0: continue
         clusters[cl].append(sentence)
 
     pprint(list(clusters.values())) #these are sentence clusters
-    plot_similarity(sentences, embeddings, 90) #visualised here
+
+    n_topics = len(clusters)
+    n_topics
+    #plot_similarity(sentences, embeddings, 90) #visualised here
+
+    #%%
 
     # approach 2: use network, every sentence is node, connections above cutoff
     # similarity, clusters in graph are clusters of topics
@@ -141,13 +337,85 @@ if __name__ == "__main__":
     # TODO: decay factor for time delay, penalise large time difference of sentences
     # TODO: adjust cutoff
 
-    #network = Network(cutoff = 0.20)
+    network = Network(cutoff = 0.4)
 
-    #for s, e in zip(sentences, embeddings):
-    #    network.add_node(s, e)
+    for s, e in zip(valid_sentences, valid_embeddings):
+        network.add_node(s, e)
 
-    #network.make_connections()
-    #network.get_clusters()
+    network.make_connections()
+    network.get_clusters()
 
-    #pprint(network.clusters)
+
+    pprint(network.clusters)
+    len(network.clusters)
     #pprint(network.edges)
+
+#%%
+
+#stcs = test_sentences
+#embeds = embed(stcs)
+
+from sklearn.cluster import AgglomerativeClustering
+
+#clustering = AgglomerativeClustering(n_clusters = None, distance_threshold = 0.2,
+    #linkage="complete", affinity="precomputed").fit(sim_m[:100, :100])
+
+from scipy.cluster import hierarchy
+from scipy.spatial import distance
+
+
+linkage = hierarchy.linkage(sim_m, method='average')
+
+from scipy.cluster.hierarchy import fcluster
+topic_labels = fcluster(linkage, sim_m.shape[0]//10, criterion="maxclust")
+tdf["topic_label"] = topic_labels
+
+#%%
+for i in tdf["topic_label"].unique():
+    if (tdf["topic_label"] == i).sum() > 5:
+        print("TOPIC: ", i)
+        print(tdf[tdf["topic_label"] == i]["utterance"].values)
+
+#%%
+sns.clustermap(sim_m[:100, :100], row_linkage=row_linkage, col_linkage=col_linkage)#, figsize=(20, 20))
+plt.show()
+#%%
+
+from minisom import MiniSom
+
+map_dim = 25
+
+es = valid_embeddings[:100]
+stcs = valid_sentences[:100]
+som = MiniSom(map_dim, map_dim, 512, sigma=1.0, random_seed=1)
+som.train_batch(es, num_iteration=len(es)*500, verbose=True)
+
+#%%
+
+# each neuron represents a cluster
+winner_coordinates = np.array([som.winner(x) for x in es]).T
+# with np.ravel_multi_index we convert the bidimensional
+# coordinates to a monodimensional index
+cluster_index = np.ravel_multi_index(winner_coordinates, (map_dim, map_dim))
+
+#%%
+plt.figure(figsize=(10, 10))
+texts = []
+
+#for t, vec in zip(stcs, es):
+#    winning_position = som.winner(vec)
+#    texts.append(plt.text(
+#        winning_position[0],
+#        winning_position[1],
+#        t))
+
+es = pd.DataFrame(es)
+for c in np.unique(cluster_index):
+    plt.scatter(es[cluster_index == c][0],
+                es[cluster_index == c][1], label = "cluster: " + str(c), alpha=.7)
+
+plt.rcParams.update({'font.size':3})
+#plt.xlim([0, map_dim])
+#plt.ylim([0, map_dim])
+plt.savefig("som.pdf")
+plt.plot()
