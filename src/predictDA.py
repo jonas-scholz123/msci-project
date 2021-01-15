@@ -16,6 +16,53 @@ max_nr_words = config.data["max_nr_words"]
 corpus = config.corpus["corpus"]
 detail_level = config.corpus["detail_level"]
 
+def get_annotated_transcript(fname, force_rebuild = False):
+    '''
+    Wrapper for make_annotated_transcript, checks if df already exists and if so,
+    just loads instead of rebuilding.
+
+    PARAMS:
+        str fname: name, without file extension, of transcript file e.g. joe_rogan_elon_musk
+
+        Optional:
+        bool force_rebuild: rebuilds from scratch even if transcript_df already
+                            exists (default = False)
+    RETURNS:
+        pd.DataFrame transcript_df: annotated transcript
+    '''
+    #load from config
+    max_nr_utterances = config.data["max_nr_utterances"]
+
+    transcript_dir = config.paths["transcripts"]
+    df_dir = config.paths["transcript_dfs"]
+
+    transcript_path = transcript_dir + fname + ".txt"
+    df_path = df_dir + fname + ".csv"
+
+    if not os.path.exists(df_path) or force_rebuild:
+        transcript = load_one_transcript(transcript_path,
+            chunked=True, chunk_size=max_nr_utterances)
+        transcript_df = make_annotated_transcript(transcript)
+        transcript_df.to_csv(df_path, index = False)
+    else:
+        transcript_df = pd.read_csv(df_path)
+
+    return transcript_df
+
+def get_all_annotated_transcripts(force_rebuild=False):
+    '''
+    Wrapper for get_annotated_transcript, gets all transcripts at once
+    '''
+
+    transcript_dir = config.paths["transcripts"]
+
+    transcript_dfs = []
+
+    for transcript_name in os.listdir(transcript_dir):
+        transcript_dfs.append(get_annotated_transcript(
+            transcript_name.split(".")[0], force_rebuild=force_rebuild))
+    return transcript_dfs
+
 def make_annotated_transcript(transcript, verbose = False):
     '''
     Completes the end-to-end process for any given transcript.
@@ -26,6 +73,7 @@ def make_annotated_transcript(transcript, verbose = False):
     OUTPUTS:
         annotated_transcript: list of tuples (utterance, DA(utterance))
     '''
+
     transcript_text = [[e[0] for e in chunk] for chunk in transcript]
     total_nr_utterances = len(sum(transcript_text, []))
     #get id2tag map and inverse
@@ -91,9 +139,4 @@ def make_annotated_transcript(transcript, verbose = False):
 
 if __name__ == '__main__':
     #transcripts = load_all_transcripts(chunked=True, chunk_size=max_nr_utterances)
-    #annotated_transcripts = [make_annotated_transcript(t) for t in transcripts]
-
-    transcript = load_one_transcript("../transcripts/joe_rogan_elon_musk.txt",
-        chunked=True, chunk_size=max_nr_utterances)
-    annotated_transcript = make_annotated_transcript(transcript)
-    annotated_transcript
+    annotated_transcripts = get_all_annotated_transcripts(force_rebuild=False)
