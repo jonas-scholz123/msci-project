@@ -22,6 +22,7 @@ corpus = dict(
 paths = dict(
     transcripts = '../transcripts/',
     transcript_dfs = '../processed_transcripts/',
+    figures = '../figures',
 )
 
 # disable huge number of information prints by tensorflow
