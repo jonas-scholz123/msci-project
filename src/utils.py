@@ -13,22 +13,26 @@ from swda import CorpusReader
 from mappings import get_id2tag
 
 def load_pretrained_glove(path):
-
-    f = open(path, encoding='utf-8')
-    print("Loading GloVe model, this can take some time...")
-    glv_vector = {}
-    for line in f:
-        values = line.split()
-        word = values[0]
-        try:
-            coefs = np.asarray(values[1:], dtype='float')
-            glv_vector[word] = coefs
-        except ValueError:
-            continue
-    f.close()
-    print("Completed loading GloVe model.")
-
-    return glv_vector
+    pkl_path = "../helper_files/glove.840B.300d.pkl"
+    if os.path.exists(pkl_path):
+        with open(pkl_path, "rb") as f:
+            glove = pickle.load(f)
+    else:
+        print("Loading GloVe model, this can take some time...")
+        f = open(path, encoding='utf-8')
+        print("Loading GloVe model, this can take some time...")
+        glove = {}
+        for line in f:
+            values = line.split()
+            word = values[0]
+            try:
+                coefs = np.asarray(values[1:], dtype='float')
+                glove[word] = coefs
+            except ValueError:
+                continue
+        f.close()
+        print("Completed loading GloVe model.")
+    return glove
 
 def get_embedding_matrix(path, word2id, force_rebuild = False):
     fpath = "../helper_files/embedding_matrix.pkl"
