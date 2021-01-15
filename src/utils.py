@@ -401,7 +401,7 @@ def get_speakers():
 
 def load_one_transcript(fpath, chunked = True, chunk_size = 100):
     with open(fpath, 'r') as f:
-        transcript = f.read().lower().replace("...", "")
+        transcript = f.read().replace("...", "")
     transcript = transcript.split("\n")
 
     all_speakers = get_speakers()
