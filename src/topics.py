@@ -13,13 +13,21 @@ from gensim.models import word2vec
 from analyse_transcripts import enhance_transcript_df
 import pandas as pd
 import config
+import nltk
+from nltk.corpus import wordnet as wn
+from nltk.corpus import stopwords
+from nltk.corpus.reader import NOUN
+from nltk.stem.wordnet import WordNetLemmatizer
+from polyglot.text import Text
 
 pd.options.display.width = 0
-pd.options.display.max_rows = None
+pd.options.display.max_rows = 100
 
 #%%
 def cosine_similarity(vec1, vec2):
-    return np.dot(vec1, vec2)/(np.linalg.norm(vec1)* np.linalg.norm(vec2))
+    if vec1 is not None and vec2 is not None:
+        return np.dot(vec1, vec2)/(np.linalg.norm(vec1)* np.linalg.norm(vec2))
+    return 0
 
 def make_similarity_matrix(labels, features):
     return np.inner(features, features)
@@ -46,12 +54,6 @@ def plot_similarity(labels, features, rotation):
 #%%
 if __name__ == "__main__":
 
-    import nltk
-    from nltk.corpus import wordnet as wn
-    from nltk.corpus import stopwords
-    from nltk.corpus.reader import NOUN
-    from nltk.stem.wordnet import WordNetLemmatizer
-    from polyglot.text import Text
     #%%
     #load glove:
     glove = load_pretrained_glove("../embeddings/glove.840B.300d.txt")
@@ -62,7 +64,7 @@ if __name__ == "__main__":
         enhance_transcript_df(transcript_df)
         transcript_df["utterance"] = transcript_df["utterance"].str.replace(" ' ", "'")
         transcript_df["utterance"] = transcript_df["utterance"].str.replace(" ’ ", "’")
-    tdf = transcript_dfs[1]
+    tdf = transcript_dfs[2]
     filler_das = ['Appreciation', 'Agree/Accept', 'Acknowledge (Backchannel)',
         'Repeat-phrase', 'Yes answers', 'Response Acknowledgement',
         'Affirmative non-yes answers', 'Backchannel in question form',
@@ -157,7 +159,10 @@ if __name__ == "__main__":
 
         #singular person words that were wrongly classified as topic words, are filtered out manually
         manual_filter_words = set(["get", "thing", "man", "go", "okay", "“", "Don",
-                                   "nobody", "are"])
+                                   "nobody", "are", "wow", "woah", "whoa", "perfect",
+                                   "way", "guy", "stuff", "day", "iteration", "bit",
+                                   "inch", "meter", "millimeter", "centimeter", "yard",
+                                   "kilometer", "mile", "foot"])
         #Don't is classified as Don (name)
 
 
@@ -194,4 +199,87 @@ if __name__ == "__main__":
                 tdf.at[i, "key_words"] = current_keywords
         return tdf
 
-add_topic_words(tdf)
+
+    tdf = add_topic_words(tdf)
+
+    tdf.head(50)
+
+    #%%
+    keywords = tdf["key_words"]
+    min_sim = 0.7
+    min_topic_length = 10
+
+    from itertools import product
+
+    def renumerate(sequence, start=None):
+        if start is None:
+            start = len(sequence) - 1
+        n = start
+        for elem in sequence[::-1]:
+            yield n, elem
+            n -= 1
+
+    def get_matches(current_kws, next_kws, min_sim, kw_glove):
+
+        matches = []
+        for kw1, kw2 in product(current_kws, next_kws):
+            if (kw1==kw2 or
+                cosine_similarity(kw_glove.get(kw1), kw_glove.get(kw2)) > min_sim):
+
+                matches.append((kw1, kw2))
+        if len(matches) == 0:
+            return False
+        return matches
+
+    get_matches(set(["baby", "day", "world", "tesla"]), set(["child", "tesla"]), 0.6, kw_glove)
+    get_matches(["child" , "world"], ["child", "life", "time"], 0.7, kw_glove)
+    boundaries = []
+    topics = []
+
+    #ASSUMPTION: only one topic at a time
+    all_keywords = set().union(*keywords)
+    kw_glove = {kw : glove[kw] for kw in all_keywords if kw in glove}
+    #
+    prev_kws = keywords[0]
+    prev_topic = keywords[0]
+    skips = 0
+
+    keyword_iter = iter(enumerate(keywords[0:500]))
+    for i, current_kws in keyword_iter: #TODO: when finalising, only let list go to end - min_topic_length
+
+        if prev_kws == current_kws:
+            continue #when exact same key words, continue
+
+        if skips > 0:
+            #print(skips)
+            skips -= 1
+            #print("skipping over ", current_kws)
+            prev_kws = current_kws
+            continue
+
+
+        #print("next: ", next_kws)
+        #print("prev: ", prev_kws)
+
+        #Now check potential boundaries:
+        for j, next_kws in renumerate(keywords[i: i + min_topic_length], i + min_topic_length - 1):#go backwards because we can cancel early
+            #print("looking for match with: ", next_kws, j)
+            matches = get_matches(prev_kws, next_kws, min_sim, kw_glove)
+            if matches:
+                #print(matches)
+                #print("match found, ", j-i, " positions ahead")
+                skips = j - i #skip this many iterations
+                break
+
+
+        if not matches:
+            #print("no match found: adding boundary at ", i)
+            boundaries.append(i)
+
+        prev_kws = current_kws
+#%%
+c = 0
+tdf[boundaries[c]:boundaries[c+1]]
+#%%
+boundaries[0:5]
+tdf.head(50)
