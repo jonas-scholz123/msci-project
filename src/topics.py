@@ -58,12 +58,11 @@ if __name__ == "__main__":
 
     #%%
     transcript_dfs = get_all_annotated_transcripts(force_rebuild=False)
-    transcript_dfs[2]
     for transcript_df in transcript_dfs:
         enhance_transcript_df(transcript_df)
         transcript_df["utterance"] = transcript_df["utterance"].str.replace(" ' ", "'")
         transcript_df["utterance"] = transcript_df["utterance"].str.replace(" ’ ", "’")
-    tdf = transcript_dfs[2]
+    tdf = transcript_dfs[1]
     filler_das = ['Appreciation', 'Agree/Accept', 'Acknowledge (Backchannel)',
         'Repeat-phrase', 'Yes answers', 'Response Acknowledgement',
         'Affirmative non-yes answers', 'Backchannel in question form',
@@ -72,13 +71,72 @@ if __name__ == "__main__":
 
     text = " ".join(tdf["utterance"])
 
-#    # extract POS without any context and store in dict
-#    # we do this because context of spoken conversation leads to a lot of
-#    # falsely identified nouns
-#    tokens = nltk.word_tokenize(text)
-#    unique_tokens = set(tokens)
-#    tok2pos = [nltk.pos_tag([tok])[0] for tok in unique_tokens]
-#    tok2pos = {tok:pos for tok, pos in tok2pos}
+    def in_word_net(word, Lem):
+        '''
+        checks whether the lemmatized given word is found in wordNet, not
+        only exact matches are kept!
+
+        PARAMS:
+            str word: word to check
+            WordNetLemmatizer Lem
+        '''
+        return len(wn.synsets(word, NOUN)) > 0
+
+    def add_by_pos(keywords, tokens, Lem, topic_pos_tags, all_nouns):
+        for word, pos in nltk.pos_tag(tokens):
+            if (pos in topic_pos_tags and len(word) > 1): #one letter words are always false positives
+                if pos in ["NN", "NNS"]:
+                    #wordnet does not have plurals, roughly remove plurals
+                    word = Lem.lemmatize(word)
+                    if word in all_nouns:
+                        keywords.add(word)
+                else:
+                    # either NNP (proper noun) or number, might not be in wordNet
+                    keywords.add(word)
+        return keywords
+
+    def add_bi_grams(keywords, tokens, Lem):
+        # for two word combinations, such as "neural net", check if its in synset
+        for words in zip(tokens[::2], tokens[1::2]):
+            combined = "_".join(words)
+            if in_word_net(combined, Lem):
+                keywords.add(combined)
+        return keywords
+
+    def add_by_ner(keywords, tokens):
+
+        # if recognised as a named entity, add to key words
+        text = Text(" ".join(tokens))
+        text.language = "en" #set language, otherwise sometimes gets confused
+        for e in text.entities:
+            word = "_".join(text.words[e.start:e.end])
+            if not ("'" in word or "’" in word): #weirdly, words with apostrophes mess with NER
+                keywords.add(word)
+        return keywords
+
+    def remove_manual_filter_words(keywords, manual_filter_words, Lem):
+        to_remove = []
+        for w in keywords:
+            if Lem.lemmatize(w.lower()) in manual_filter_words:
+                to_remove.append(w)
+        for w in to_remove: keywords.remove(w) #remove manually filtered words
+        return keywords
+
+    def remove_partial_words(keywords):
+        #remove e.g. "neural" and "net" if talking about neural_nets
+        to_remove = set() #unique
+        for kw in keywords:
+            if "_" in kw:
+                partial_kws = kw.split("_")
+            else:
+                continue
+
+            for partial_kw in partial_kws:
+                if partial_kw in keywords:
+                    to_remove.add(partial_kw)
+        for w in to_remove: keywords.remove(w)
+        return keywords
+
 
     def add_topic_words(tdf):
         #TODO: add documentation for how to install NER/POS libraries
@@ -95,75 +153,33 @@ if __name__ == "__main__":
         RETURNS:
             pd.DataFrame tdf: annotated dataframe
         '''
+        #TODO: Analogies destroy topic, maybe can't do anything about that
 
         #singular person words that were wrongly classified as topic words, are filtered out manually
-        manual_filter_words = ["get", "thing"]
+        manual_filter_words = set(["get", "thing", "man", "go", "okay", "“", "Don",
+                                   "nobody", "are"])
+        #Don't is classified as Don (name)
+
+
+        topic_pos_tags = set(["NN", "NNP", "NNS"]) #nouns, proper nouns, plural nouns
 
         stop_words = set(stopwords.words('english'))
         Lem = WordNetLemmatizer()
 
+        #get all nouns in wordNet
+        all_nouns = set([s.name().split(".")[0] for s in wn.all_synsets('n')])
+
         sentence_keywords = []
         for entry in tdf["utterance"]:
-            printable = False
-            keywords = []
+            keywords = set() #set because want unique
             tokens = nltk.word_tokenize(entry)
-            tokens = [t for t in tokens if t not in stop_words]
-            #TODO: implement two word combinations
-            #TODO: Analogies destroy topic, maybe can't do anything about that
-            for word, pos in nltk.pos_tag(tokens):
-                #sometimes 1 letter words are misclassified as nouns and added
-                if printable and word == "name":
-                    print("name is identified as ", pos)
-                    print("pos in NN: ", pos in ["NN", "NNP", "NNS", "CD"])
-                    print("len(word) > 1: ", len(word) > 1)
-                    print("not in stopwords", word not in stop_words)
-                if (pos in ["NN", "NNP", "NNS", "CD"]
-                    and len(word) > 1
-                    and word not in stop_words):
-                    if printable:
-                        print('getting here')
-                    #checks if it can be a noun
-                    if pos in ["NN", "NNS"]:
-                        #wordnet does not have plurals, roughly remove plurals
-                        word = Lem.lemmatize(word)
-                        for synset in wn.synsets(word, NOUN):
-                            if printable:
-                                print(synset)
-                            if synset.name().split('.')[0] == word.lower():
-                                #print("adding word1: ", word)
-                                if printable:
-                                    print(word, "Case 1")
-                                keywords.append(word)
-                                break
-                    else:
-                        keywords.append(word)
-
-            # for two word combinations, such as "neural net", check if its in synset
-            for words in zip(tokens[::2], tokens[1::2]):
-                combined = "_".join(words)
-                combined = Lem.lemmatize(combined)
-                if len(wn.synsets(combined, NOUN)) > 0:
-                    if printable:
-                        print(combined, "Case 2")
-                    keywords.append(combined)
-
-            # if recognised as a named entity, add to key words
-            text = Text(" ".join([w for w in entry.split(" ") if w not in stop_words]))
-            text.language = "en" #set language, otherwise sometimes gets confused
-            for e in text.entities:
-                word = "_".join(text.words[e.start:e.end])
-                if not ("'" in word or "’" in word): #weirdly, words with apostrophes mess with NER
-                    if printable:
-                        print(word, "Case 3")
-                    keywords.append(word)
-
-            keywords = set(keywords) #unique words
-            to_remove = []
-            for w in keywords:
-                if Lem.lemmatize(w) in manual_filter_words:
-                    to_remove.append(w)
-            for w in to_remove: keywords.remove(w) #remove manually filtered words
-            sentence_keywords.append(list(keywords))
+            tokens = [t for t in tokens if t not in stop_words] #filter out stop words
+            keywords = add_by_pos(keywords, tokens, Lem, topic_pos_tags, all_nouns)
+            keywords = add_by_ner(keywords, tokens)
+            keywords = add_bi_grams(keywords, tokens, Lem)
+            keywords = remove_manual_filter_words(keywords, manual_filter_words, Lem)
+            keywords = remove_partial_words(keywords)
+            sentence_keywords.append(keywords)
 
         tdf["key_words"] = sentence_keywords
         tdf.loc[~tdf["key_words"].astype(bool), "key_words"] = None
@@ -177,3 +193,5 @@ if __name__ == "__main__":
             else:
                 tdf.at[i, "key_words"] = current_keywords
         return tdf
+
+add_topic_words(tdf)
