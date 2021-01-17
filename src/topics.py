@@ -19,9 +19,11 @@ from nltk.corpus import stopwords
 from nltk.corpus.reader import NOUN
 from nltk.stem.wordnet import WordNetLemmatizer
 from polyglot.text import Text
+from collections import defaultdict
+from itertools import product
 
 pd.options.display.width = 0
-pd.options.display.max_rows = 100
+pd.options.display.max_rows = 500
 
 #%%
 def cosine_similarity(vec1, vec2):
@@ -51,235 +53,236 @@ def plot_similarity(labels, features, rotation):
         cmap="YlOrRd")
     g.ax_heatmap.set_title("Clustered Semantic Textual Similarity")
     plt.savefig(config.paths["figures"] + "similarity.pdf")
-#%%
-if __name__ == "__main__":
 
-    #%%
-    #load glove:
-    glove = load_pretrained_glove("../embeddings/glove.840B.300d.txt")
+def in_word_net(word, Lem):
+    '''
+    checks whether the lemmatized given word is found in wordNet, not
+    only exact matches are kept!
 
-    #%%
-    transcript_dfs = get_all_annotated_transcripts(force_rebuild=False)
-    for transcript_df in transcript_dfs:
-        enhance_transcript_df(transcript_df)
-        transcript_df["utterance"] = transcript_df["utterance"].str.replace(" ' ", "'")
-        transcript_df["utterance"] = transcript_df["utterance"].str.replace(" ’ ", "’")
-    tdf = transcript_dfs[2]
+    PARAMS:
+        str word: word to check
+        WordNetLemmatizer Lem
+    '''
+    return len(wn.synsets(word, NOUN)) > 0
+
+def add_by_pos(keywords, tokens, Lem, topic_pos_tags, all_nouns):
+    for word, pos in nltk.pos_tag(tokens):
+        if (pos in topic_pos_tags and len(word) > 1): #one letter words are always false positives
+            if pos in ["NN", "NNS"]:
+                #wordnet does not have plurals, roughly remove plurals
+                word = Lem.lemmatize(word)
+                if word in all_nouns:
+                    keywords.add(word)
+            else:
+                # either NNP (proper noun) or number, might not be in wordNet
+                keywords.add(word)
+    return keywords
+
+def add_all_nouns(keywords, tokens, Lem):
+    for word in tokens:
+        word = Lem.lemmatize(word)
+        if wn.synsets(word, NOUN):
+            keywords.add(word)
+    return keywords
+
+def add_bi_grams(keywords, tokens, Lem):
+    # for two word combinations, such as "neural net", check if its in synset
+    for words in zip(tokens, tokens[1:]):
+        combined = "_".join(words)
+        if in_word_net(combined, Lem):
+            keywords.add(combined)
+    return keywords
+
+def add_by_ner(keywords, tokens):
+
+    # if recognised as a named entity, add to key words
+    text = Text(" ".join(tokens))
+    text.language = "en" #set language, otherwise sometimes gets confused
+    for e in text.entities:
+        word = "_".join(text.words[e.start:e.end])
+        if not ("'" in word or "’" in word): #weirdly, words with apostrophes mess with NER
+            keywords.add(word)
+    return keywords
+
+def remove_manual_filter_words(keywords, manual_filter_words, Lem):
+    to_remove = []
+    for w in keywords:
+        if Lem.lemmatize(w.lower()) in manual_filter_words:
+            to_remove.append(w)
+    for w in to_remove: keywords.remove(w) #remove manually filtered words
+    return keywords
+
+def remove_partial_words(keywords):
+    #remove e.g. "neural" and "net" if talking about neural_nets
+    to_remove = set() #unique
+    for kw in keywords:
+        if "_" in kw:
+            partial_kws = kw.split("_")
+        else:
+            continue
+
+        for partial_kw in partial_kws:
+            if partial_kw in keywords:
+                to_remove.add(partial_kw)
+    for w in to_remove: keywords.remove(w)
+    return keywords
+
+
+def add_topic_words(tdf):
+    #TODO: implement tf-idf when we have all datasets to remove common words
+    #TODO: add documentation for how to install NER/POS libraries
+    '''
+    Extracts and adds (in a new column) words that represent the topic of a
+    given sentence. This will later be used for segmentation.
+
+    Uses POS (part of speech) tagging, NER (named entity recognition) and
+    wordNet to figure out topic words
+    =======================================================================
+    PARAMS:
+        pd.DataFrame tdf: transcript dataframe
+    RETURNS:
+        pd.DataFrame tdf: annotated dataframe
+    '''
+    #TODO: Analogies destroy topic, maybe can't do anything about that
+
+    #singular person words that were wrongly classified as topic words, are filtered out manually
+    #Note some words, like "time" are unlikely to be the topic of conversation
+    #and more used in sentences such as "last time you did X" or "I remember"
+    #a time when..."
+    # other words are just nouns that are filler words such as "guy, thing, man"
+    # some words are mostly used in combination with "of" such as "the process of"
+    # "kind of" "sort of " are filtered
+    manual_filter_words = set(["get", "thing", "man", "go", "okay", "“", "Don",
+                               "nobody", "are", "wow", "woah", "whoa", "perfect",
+                               "way", "guy", "stuff", "day", "iteration", "bit",
+                               "inch", "meter", "millimeter", "centimeter", "yard",
+                               "kilometer", "mile", "foot", "time",
+                               "Does", "process", "lot", "kind", "sort"])
+    #Don't is classified as Don (name)
+
+
     filler_das = ['Appreciation', 'Agree/Accept', 'Acknowledge (Backchannel)',
         'Repeat-phrase', 'Yes answers', 'Response Acknowledgement',
         'Affirmative non-yes answers', 'Backchannel in question form',
         'Negative non-no answers', 'Uninterpretable', 'Signal-non-understanding',
         'Hold before answer/agreement', 'Action-directive', 'Thanking']
 
-    text = " ".join(tdf["utterance"])
 
-    def in_word_net(word, Lem):
-        '''
-        checks whether the lemmatized given word is found in wordNet, not
-        only exact matches are kept!
+    topic_pos_tags = set(["NN", "NNP", "NNS"]) #nouns, proper nouns, plural nouns
 
-        PARAMS:
-            str word: word to check
-            WordNetLemmatizer Lem
-        '''
-        return len(wn.synsets(word, NOUN)) > 0
+    stop_words = set(stopwords.words('english'))
+    Lem = WordNetLemmatizer()
 
-    def add_by_pos(keywords, tokens, Lem, topic_pos_tags, all_nouns):
-        for word, pos in nltk.pos_tag(tokens):
-            if (pos in topic_pos_tags and len(word) > 1): #one letter words are always false positives
-                if pos in ["NN", "NNS"]:
-                    #wordnet does not have plurals, roughly remove plurals
-                    word = Lem.lemmatize(word)
-                    if word in all_nouns:
-                        keywords.add(word)
-                else:
-                    # either NNP (proper noun) or number, might not be in wordNet
-                    keywords.add(word)
-        return keywords
+    #get all nouns in wordNet
+    all_nouns = set([s.name().split(".")[0] for s in wn.all_synsets('n')])
 
-    def add_bi_grams(keywords, tokens, Lem):
-        # for two word combinations, such as "neural net", check if its in synset
-        for words in zip(tokens[::2], tokens[1::2]):
-            combined = "_".join(words)
-            if in_word_net(combined, Lem):
-                keywords.add(combined)
-        return keywords
+    sentence_keywords = []
+    for entry in tdf["utterance"]:
+        keywords = set() #set because want unique
+        tokens = nltk.word_tokenize(entry)
+        tokens = [t for t in tokens if t not in stop_words] #filter out stop words
+        keywords = add_by_pos(keywords, tokens, Lem, topic_pos_tags, all_nouns)
+        keywords = add_by_ner(keywords, tokens)
+        keywords = add_bi_grams(keywords, tokens, Lem)
+        # can use this with tf-idf later, can get rid of POS
+        #keywords = add_all_nouns(keywords, tokens, Lem)
+        keywords = remove_manual_filter_words(keywords, manual_filter_words, Lem)
+        keywords = remove_partial_words(keywords)
+        sentence_keywords.append(keywords)
 
-    def add_by_ner(keywords, tokens):
+    tdf["key_words"] = sentence_keywords
+    tdf.loc[~tdf["key_words"].astype(bool), "key_words"] = None
+    tdf.loc[tdf["da_label"].isin(filler_das), "key_words"] = None
+    return tdf
 
-        # if recognised as a named entity, add to key words
-        text = Text(" ".join(tokens))
-        text.language = "en" #set language, otherwise sometimes gets confused
-        for e in text.entities:
-            word = "_".join(text.words[e.start:e.end])
-            if not ("'" in word or "’" in word): #weirdly, words with apostrophes mess with NER
-                keywords.add(word)
-        return keywords
+def get_end_of_topic(key_words, topic_set, start_index, max_gap, min_sim, kw_glove):
+    '''
+    goes through following keywords (within max_gap) and checks if matches
+    are found, if so, calls itself recursively to check matching keyword etc.
 
-    def remove_manual_filter_words(keywords, manual_filter_words, Lem):
-        to_remove = []
-        for w in keywords:
-            if Lem.lemmatize(w.lower()) in manual_filter_words:
-                to_remove.append(w)
-        for w in to_remove: keywords.remove(w) #remove manually filtered words
-        return keywords
+    if no matches are found within the next max_gap sentences, returns the
+    starting point
+    '''
+    for j, next_kws in key_words.loc[start_index + 1:].iteritems():
+        if j - start_index  > max_gap:
+            return start_index
+        matches = get_matches(topic_set, next_kws, min_sim, kw_glove)
+        if matches:
+            return get_end_of_topic(key_words, topic_set, j, max_gap, min_sim, kw_glove)
+    return key_words.index[-1] #only reaches this point at end of convo
 
-    def remove_partial_words(keywords):
-        #remove e.g. "neural" and "net" if talking about neural_nets
-        to_remove = set() #unique
-        for kw in keywords:
-            if "_" in kw:
-                partial_kws = kw.split("_")
-            else:
-                continue
+def add_topics(tdf, max_gap, min_sim, glove):
+    topics = defaultdict(list)
 
-            for partial_kw in partial_kws:
-                if partial_kw in keywords:
-                    to_remove.add(partial_kw)
-        for w in to_remove: keywords.remove(w)
-        return keywords
-
-
-    def add_topic_words(tdf):
-        #TODO: add documentation for how to install NER/POS libraries
-        #TODO: clean this up, put everything in smaller functions etc
-        '''
-        Extracts and adds (in a new column) words that represent the topic of a
-        given sentence. This will later be used for segmentation.
-
-        Uses POS (part of speech) tagging, NER (named entity recognition) and
-        wordNet to figure out topic words
-        =======================================================================
-        PARAMS:
-            pd.DataFrame tdf: transcript dataframe
-        RETURNS:
-            pd.DataFrame tdf: annotated dataframe
-        '''
-        #TODO: Analogies destroy topic, maybe can't do anything about that
-
-        #singular person words that were wrongly classified as topic words, are filtered out manually
-        manual_filter_words = set(["get", "thing", "man", "go", "okay", "“", "Don",
-                                   "nobody", "are", "wow", "woah", "whoa", "perfect",
-                                   "way", "guy", "stuff", "day", "iteration", "bit",
-                                   "inch", "meter", "millimeter", "centimeter", "yard",
-                                   "kilometer", "mile", "foot"])
-        #Don't is classified as Don (name)
-
-
-        topic_pos_tags = set(["NN", "NNP", "NNS"]) #nouns, proper nouns, plural nouns
-
-        stop_words = set(stopwords.words('english'))
-        Lem = WordNetLemmatizer()
-
-        #get all nouns in wordNet
-        all_nouns = set([s.name().split(".")[0] for s in wn.all_synsets('n')])
-
-        sentence_keywords = []
-        for entry in tdf["utterance"]:
-            keywords = set() #set because want unique
-            tokens = nltk.word_tokenize(entry)
-            tokens = [t for t in tokens if t not in stop_words] #filter out stop words
-            keywords = add_by_pos(keywords, tokens, Lem, topic_pos_tags, all_nouns)
-            keywords = add_by_ner(keywords, tokens)
-            keywords = add_bi_grams(keywords, tokens, Lem)
-            keywords = remove_manual_filter_words(keywords, manual_filter_words, Lem)
-            keywords = remove_partial_words(keywords)
-            sentence_keywords.append(keywords)
-
-        tdf["key_words"] = sentence_keywords
-        tdf.loc[~tdf["key_words"].astype(bool), "key_words"] = None
-        tdf.loc[tdf["da_label"].isin(filler_das), "key_words"] = None
-
-        # temporarily set all entries without keywords to have the same keywords as previous:
-        current_keywords = ["NO KEYWORDS YET"]
-        for i, keywords in enumerate(tdf["key_words"]):
-            if keywords:
-                current_keywords = keywords
-            else:
-                tdf.at[i, "key_words"] = current_keywords
-        return tdf
-
-
-    tdf = add_topic_words(tdf)
-
-    tdf.head(50)
-
-    #%%
-    keywords = tdf["key_words"]
-    min_sim = 0.7
-    min_topic_length = 10
-
-    from itertools import product
-
-    def renumerate(sequence, start=None):
-        if start is None:
-            start = len(sequence) - 1
-        n = start
-        for elem in sequence[::-1]:
-            yield n, elem
-            n -= 1
-
-    def get_matches(current_kws, next_kws, min_sim, kw_glove):
-
-        matches = []
-        for kw1, kw2 in product(current_kws, next_kws):
-            if (kw1==kw2 or
-                cosine_similarity(kw_glove.get(kw1), kw_glove.get(kw2)) > min_sim):
-
-                matches.append((kw1, kw2))
-        if len(matches) == 0:
-            return False
-        return matches
-
-    get_matches(set(["baby", "day", "world", "tesla"]), set(["child", "tesla"]), 0.6, kw_glove)
-    get_matches(["child" , "world"], ["child", "life", "time"], 0.7, kw_glove)
-    boundaries = []
-    topics = []
-
-    #ASSUMPTION: only one topic at a time
-    all_keywords = set().union(*keywords)
+    key_words = tdf[~tdf["key_words"].isnull()]["key_words"]
+    all_keywords = set().union(*[k for k in key_words if k])
     kw_glove = {kw : glove[kw] for kw in all_keywords if kw in glove}
-    #
-    prev_kws = keywords[0]
-    prev_topic = keywords[0]
-    skips = 0
 
-    keyword_iter = iter(enumerate(keywords[0:500]))
-    for i, current_kws in keyword_iter: #TODO: when finalising, only let list go to end - min_topic_length
+    for i, kws in key_words.iteritems():
+        for topic_word in kws:
+            # Always take maximum topic, range, don't check again if topic
+            # already marked for a range containing i
+            if (topics[topic_word] and
+                topics[topic_word][-1][0] < i and topics[topic_word][-1][1] > i):
+                continue
+            topic_set = set([topic_word])
+            end = get_end_of_topic(key_words, topic_set, i, max_gap, min_sim, kw_glove)
+            if end != i:
+                topics[topic_word].append((i, end))
 
-        if prev_kws == current_kws:
-            continue #when exact same key words, continue
+    tdf["topics"] = np.empty((len(tdf), 0)).tolist() #set topics to empty list
 
-        if skips > 0:
-            #print(skips)
-            skips -= 1
-            #print("skipping over ", current_kws)
-            prev_kws = current_kws
-            continue
+    tdf["topics"] = ""
+    #append topics
+    for topic, index_pairs in topics.items():
+        for start, end in index_pairs:
+            tdf.loc[start : end, "topics"] += topic + ", "
 
-
-        #print("next: ", next_kws)
-        #print("prev: ", prev_kws)
-
-        #Now check potential boundaries:
-        for j, next_kws in renumerate(keywords[i: i + min_topic_length], i + min_topic_length - 1):#go backwards because we can cancel early
-            #print("looking for match with: ", next_kws, j)
-            matches = get_matches(prev_kws, next_kws, min_sim, kw_glove)
-            if matches:
-                #print(matches)
-                #print("match found, ", j-i, " positions ahead")
-                skips = j - i #skip this many iterations
-                break
+    # no topic fields are filled w previous topics
+    tdf.replace("", np.nan, inplace = True)
+    tdf["topics"].fillna(method="ffill", inplace = True)
 
 
-        if not matches:
-            #print("no match found: adding boundary at ", i)
-            boundaries.append(i)
+def renumerate(sequence, start=None):
+    ''' reverse enumerate'''
+    if start is None:
+        start = len(sequence) - 1
+    n = start
+    for elem in sequence[::-1]:
+        yield n, elem
+        n -= 1
 
-        prev_kws = current_kws
-#%%
-c = 0
-tdf[boundaries[c]:boundaries[c+1]]
-#%%
-boundaries[0:5]
-tdf.head(50)
+def get_matches(current_kws, next_kws, min_sim, kw_glove):
+
+    matches = set()
+    for kw1, kw2 in product(current_kws, next_kws):
+        if (kw1==kw2 or
+            cosine_similarity(kw_glove.get(kw1), kw_glove.get(kw2)) > min_sim):
+            matches.add(kw1)
+            matches.add(kw2)
+            #print("added to matches: ", kw1, kw2)
+    if len(matches) == 0:
+        return False
+    return matches
+
+if __name__ == "__main__":
+
+    max_gap = 10 #max number of sentences between two topic_word matches for it to no longer be one topic
+    min_sim = 0.65
+
+
+    #load glove:
+    glove = load_pretrained_glove("../embeddings/glove.840B.300d.txt")
+
+    transcript_dfs = get_all_annotated_transcripts(force_rebuild=False)
+    for transcript_df in transcript_dfs:
+        enhance_transcript_df(transcript_df)
+        transcript_df["utterance"] = transcript_df["utterance"].str.replace(" ' ", "'")
+        transcript_df["utterance"] = transcript_df["utterance"].str.replace(" ’ ", "’")
+    tdf = transcript_dfs[2]
+
+#a = tdf.loc[75, "utterance"].split(" ")
+    tdf = add_topic_words(tdf)
+    add_topics(tdf, max_gap, min_sim, glove)
+
+    tdf.head(500)
