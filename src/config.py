@@ -47,8 +47,10 @@ topics = dict(
         'Repeat-phrase', 'Yes answers', 'Response Acknowledgement',
         'Affirmative non-yes answers', 'Backchannel in question form',
         'Negative non-no answers', 'Uninterpretable', 'Signal-non-understanding',
-        'Hold before answer/agreement', 'Action-directive', 'Thanking'])
+        'Hold before answer/agreement', 'Action-directive', 'Thanking']),
 
+    max_gap = 10, #max number of sentences between two topic_word matches for it to no longer be one topic
+    min_sim = 0.65,
 )
 
 # disable huge number of information prints by tensorflow
