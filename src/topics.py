@@ -63,18 +63,33 @@ def in_word_net(word, Lem):
     '''
     return len(wn.synsets(word, NOUN)) > 0
 
-def add_by_pos(keywords, tokens, Lem, topic_pos_tags, all_nouns):
-    for word, pos in nltk.pos_tag(tokens):
-        if (pos in topic_pos_tags and len(word) > 1): #one letter words are always false positives
-            if pos in ["NN", "NNS"]:
-                #wordnet does not have plurals, roughly remove plurals
-                word = Lem.lemmatize(word)
-                if word in all_nouns:
-                    keywords.add(word)
-            else:
-                # either NNP (proper noun) or number, might not be in wordNet
-                keywords.add(word)
+
+def add_by_ner(keywords, sentence):
+    for entity in sentence.get_spans('ner'):
+        if entity.labels[0].value in ["CARDINAL", "ORDINAL", "TIME", "PERCENT"]:
+            continue
+        keywords.add(entity.text)
     return keywords
+
+def add_by_pos(keywords, sentence, Lem):
+    for entity in sentence.get_spans('pos'):
+        pos = entity.labels[0].value
+        if pos.startswith("NN"):
+            keywords.add(Lem.lemmatize(entity.text))
+    return keywords
+
+#def add_by_pos(keywords, tokens, Lem, topic_pos_tags, all_nouns):
+#    for word, pos in nltk.pos_tag(tokens):
+#        if (pos in topic_pos_tags and len(word) > 1): #one letter words are always false positives
+#            if pos in ["NN", "NNS"]:
+#                #wordnet does not have plurals, roughly remove plurals
+#                word = Lem.lemmatize(word)
+#                if word in all_nouns:
+#                    keywords.add(word)
+#            else:
+#                # either NNP (proper noun) or number, might not be in wordNet
+#                keywords.add(word)
+#    return keywords
 
 def add_all_nouns(keywords, tokens, Lem):
     for word in tokens:
@@ -91,16 +106,16 @@ def add_bi_grams(keywords, tokens, Lem):
             keywords.add(combined)
     return keywords
 
-def add_by_ner(keywords, tokens):
-
-    # if recognised as a named entity, add to key words
-    text = Text(" ".join(tokens))
-    text.language = "en" #set language, otherwise sometimes gets confused
-    for e in text.entities:
-        word = "_".join(text.words[e.start:e.end])
-        if not ("'" in word or "’" in word): #weirdly, words with apostrophes mess with NER
-            keywords.add(word)
-    return keywords
+#def add_by_ner(keywords, tokens):
+#
+#    # if recognised as a named entity, add to key words
+#    text = Text(" ".join(tokens))
+#    text.language = "en" #set language, otherwise sometimes gets confused
+#    for e in text.entities:
+#        word = "_".join(text.words[e.start:e.end])
+#        if not ("'" in word or "’" in word): #weirdly, words with apostrophes mess with NER
+#            keywords.add(word)
+#    return keywords
 
 def remove_manual_filter_words(keywords, manual_filter_words, Lem):
     to_remove = []
@@ -166,6 +181,20 @@ def add_topic_words(tdf):
         'Hold before answer/agreement', 'Action-directive', 'Thanking']
 
 
+    splitter = SegtokSentenceSplitter()
+    sentences = [
+        Sentence(
+            text=u,
+            use_tokenizer = splitter._tokenizer,
+            start_position=0
+        )
+        for u in tdf["utterance"]
+    ]
+
+
+    tagger = MultiTagger.load(['pos', 'ner-ontonotes-fast'])
+    tagger.predict(sentences)
+
     topic_pos_tags = set(["NN", "NNP", "NNS"]) #nouns, proper nouns, plural nouns
 
     stop_words = set(stopwords.words('english'))
@@ -175,12 +204,14 @@ def add_topic_words(tdf):
     all_nouns = set([s.name().split(".")[0] for s in wn.all_synsets('n')])
 
     sentence_keywords = []
-    for entry in tdf["utterance"]:
+    for sent, text in zip(sentences, tdf["utterance"]):
         keywords = set() #set because want unique
-        tokens = nltk.word_tokenize(entry)
+        tokens = nltk.word_tokenize(text)
         tokens = [t for t in tokens if t not in stop_words] #filter out stop words
-        keywords = add_by_pos(keywords, tokens, Lem, topic_pos_tags, all_nouns)
-        keywords = add_by_ner(keywords, tokens)
+        #keywords = add_by_pos(keywords, tokens, Lem, topic_pos_tags, all_nouns)
+        #keywords = add_by_ner(keywords, tokens)
+        keywords = add_by_pos(keywords, sent, Lem)
+        keywords = add_by_ner(keywords, sent)
         keywords = add_bi_grams(keywords, tokens, Lem)
         # can use this with tf-idf later, can get rid of POS
         #keywords = add_all_nouns(keywords, tokens, Lem)
@@ -284,3 +315,24 @@ if __name__ == "__main__":
     add_topics(tdf, max_gap, min_sim, glove)
 
     tdf.head(500)
+#%%
+
+all_keywords = []
+
+for sentence in sentences:
+    keywords = set()
+    #print(sentence.to_tagged_string())
+    #print(sentence.to_dict(tag_type="ner"))
+    for entity in sentence.get_spans('ner'):
+        if entity.labels[0].value in ["CARDINAL", "ORDINAL", "TIME", "PERCENT"]:
+            continue
+        keywords.add(entity.text)
+        #print("E", entity)
+
+    for entity in sentence.get_spans('pos'):
+        if entity.labels[0].value.startswith("NN"):
+            keywords.add(entity.text)
+
+    all_keywords.append(keywords)
+
+all_keywords
