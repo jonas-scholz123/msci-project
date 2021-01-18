@@ -11,6 +11,8 @@ from bilstm_crf import get_bilstm_crf_model
 from mappings import get_id2tag, get_tag2full_label
 import config
 
+os.environ["TF_FORCE_GPU_ALLOW_GROWTH"]="true"
+
 max_nr_utterances = config.data["max_nr_utterances"]
 max_nr_words = config.data["max_nr_words"]
 corpus = config.corpus["corpus"]
