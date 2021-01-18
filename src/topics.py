@@ -120,16 +120,33 @@ def add_topics_to_dfs(dfs):
     '''
     Wrapper of topic classification for multiple DFs, to cache models etc.
     '''
-    #LOAD flair model ~ 11s
+
+    #things needed for topics extraction
+    #load flair model ~ 11s
     tagger = MultiTagger.load(['pos-fast', 'ner-ontonotes-fast'])
     # init lematizer
     Lem = WordNetLemmatizer()
     stop_words = set(stopwords.words('english'))
     filler_das = config.topics["filler_das"]
     manual_filter_words = config.topics["manual_filter_words"]
+
+    #things needed for topic segmentation
+    max_gap = config.topics["max_gap"]
+    min_sim = config.topics["min_sim"]
     print("adding topics... this takes a while")
-    dfs = [add_topics(add_key_words(tdf, tagger, Lem, stop_words,
-                        filler_das, manual_filter_words)) for tdf in tqdm(dfs)]
+    #load glove: ~ 9s
+    glove = load_pretrained_glove("../embeddings/glove.840B.300d.txt")
+    dfs = [add_topics(
+                add_key_words(
+                    tdf,
+                    tagger,
+                    Lem,
+                    stop_words,
+                    filler_das,
+                    manual_filter_words),
+                max_gap,
+                min_sim,
+                glove) for tdf in tqdm(dfs)]
     return dfs
 
 def add_key_words(tdf, tagger, Lem, stop_words, filler_das, manual_filter_words):
@@ -239,18 +256,11 @@ def get_matches(current_kws, next_kws, min_sim, kw_glove):
 
 if __name__ == "__main__":
 
-    max_gap = 10 #max number of sentences between two topic_word matches for it to no longer be one topic
-    min_sim = 0.65
-
-    #load glove: ~ 9s
-    glove = load_pretrained_glove("../embeddings/glove.840B.300d.txt")
     transcript_dfs = get_all_annotated_transcripts(force_rebuild=False)
     for transcript_df in tqdm(transcript_dfs):
         enhance_transcript_df(transcript_df)
         transcript_df["utterance"] = transcript_df["utterance"].str.replace(" ' ", "'")
         transcript_df["utterance"] = transcript_df["utterance"].str.replace(" ’ ", "’")
     tdf = transcript_dfs[2]
-
-#a = tdf.loc[75, "utterance"].split(" ")
-    add_topics_to_dfs([tdf], max_gap, min_sim, glove)
+    add_topics_to_dfs([tdf])
     tdf.head(500)
