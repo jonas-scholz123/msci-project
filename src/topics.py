@@ -78,19 +78,6 @@ def add_by_pos(keywords, sentence, Lem):
             keywords.add(Lem.lemmatize(entity.text))
     return keywords
 
-#def add_by_pos(keywords, tokens, Lem, topic_pos_tags, all_nouns):
-#    for word, pos in nltk.pos_tag(tokens):
-#        if (pos in topic_pos_tags and len(word) > 1): #one letter words are always false positives
-#            if pos in ["NN", "NNS"]:
-#                #wordnet does not have plurals, roughly remove plurals
-#                word = Lem.lemmatize(word)
-#                if word in all_nouns:
-#                    keywords.add(word)
-#            else:
-#                # either NNP (proper noun) or number, might not be in wordNet
-#                keywords.add(word)
-#    return keywords
-
 def add_all_nouns(keywords, tokens, Lem):
     for word in tokens:
         word = Lem.lemmatize(word)
@@ -105,17 +92,6 @@ def add_bi_grams(keywords, tokens, Lem):
         if in_word_net(combined, Lem):
             keywords.add(combined)
     return keywords
-
-#def add_by_ner(keywords, tokens):
-#
-#    # if recognised as a named entity, add to key words
-#    text = Text(" ".join(tokens))
-#    text.language = "en" #set language, otherwise sometimes gets confused
-#    for e in text.entities:
-#        word = "_".join(text.words[e.start:e.end])
-#        if not ("'" in word or "’" in word): #weirdly, words with apostrophes mess with NER
-#            keywords.add(word)
-#    return keywords
 
 def remove_manual_filter_words(keywords, manual_filter_words, Lem):
     to_remove = []
@@ -140,7 +116,7 @@ def remove_partial_words(keywords):
     for w in to_remove: keywords.remove(w)
     return keywords
 
-def add_keywords_to_dfs(dfs):
+def add_topics_to_dfs(dfs):
     '''
     Wrapper of topic classification for multiple DFs, to cache models etc.
     '''
@@ -151,8 +127,9 @@ def add_keywords_to_dfs(dfs):
     stop_words = set(stopwords.words('english'))
     filler_das = config.topics["filler_das"]
     manual_filter_words = config.topics["manual_filter_words"]
-
-    dfs = [add_topics(add_key_words(tdf)) for tdf in dfs]
+    print("adding topics... this takes a while")
+    dfs = [add_topics(add_key_words(tdf, tagger, Lem, stop_words,
+                        filler_das, manual_filter_words)) for tdf in tqdm(dfs)]
     return dfs
 
 def add_key_words(tdf, tagger, Lem, stop_words, filler_das, manual_filter_words):
@@ -275,6 +252,5 @@ if __name__ == "__main__":
     tdf = transcript_dfs[2]
 
 #a = tdf.loc[75, "utterance"].split(" ")
-    tdf = add_key_words(tdf)
-    add_topics(tdf, max_gap, min_sim, glove)
+    add_topics_to_dfs([tdf], max_gap, min_sim, glove)
     tdf.head(500)
