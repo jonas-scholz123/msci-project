@@ -140,8 +140,22 @@ def remove_partial_words(keywords):
     for w in to_remove: keywords.remove(w)
     return keywords
 
+def add_keywords_to_dfs(dfs):
+    '''
+    Wrapper of topic classification for multiple DFs, to cache models etc.
+    '''
+    #LOAD flair model ~ 11s
+    tagger = MultiTagger.load(['pos-fast', 'ner-ontonotes-fast'])
+    # init lematizer
+    Lem = WordNetLemmatizer()
+    stop_words = set(stopwords.words('english'))
+    filler_das = config.topics["filler_das"]
+    manual_filter_words = config.topics["manual_filter_words"]
 
-def add_topic_words(tdf):
+    dfs = [add_topics(add_key_words(tdf)) for tdf in dfs]
+    return dfs
+
+def add_key_words(tdf, tagger, Lem, stop_words, filler_das, manual_filter_words):
     #TODO: implement tf-idf when we have all datasets to remove common words
     #TODO: add documentation for how to install NER/POS libraries
     '''
@@ -158,50 +172,12 @@ def add_topic_words(tdf):
     '''
     #TODO: Analogies destroy topic, maybe can't do anything about that
 
-    #singular person words that were wrongly classified as topic words, are filtered out manually
-    #Note some words, like "time" are unlikely to be the topic of conversation
-    #and more used in sentences such as "last time you did X" or "I remember"
-    #a time when..."
-    # other words are just nouns that are filler words such as "guy, thing, man"
-    # some words are mostly used in combination with "of" such as "the process of"
-    # "kind of" "sort of " are filtered
-    manual_filter_words = set(["get", "thing", "man", "go", "okay", "“", "Don",
-                               "nobody", "are", "wow", "woah", "whoa", "perfect",
-                               "way", "guy", "stuff", "day", "iteration", "bit",
-                               "inch", "meter", "millimeter", "centimeter", "yard",
-                               "kilometer", "mile", "foot", "time",
-                               "Does", "process", "lot", "kind", "sort"])
-    #Don't is classified as Don (name)
-
-
-    filler_das = ['Appreciation', 'Agree/Accept', 'Acknowledge (Backchannel)',
-        'Repeat-phrase', 'Yes answers', 'Response Acknowledgement',
-        'Affirmative non-yes answers', 'Backchannel in question form',
-        'Negative non-no answers', 'Uninterpretable', 'Signal-non-understanding',
-        'Hold before answer/agreement', 'Action-directive', 'Thanking']
-
-
-    splitter = SegtokSentenceSplitter()
-    sentences = [
-        Sentence(
-            text=u,
-            use_tokenizer = splitter._tokenizer,
-            start_position=0
-        )
-        for u in tdf["utterance"]
-    ]
-
-
-    tagger = MultiTagger.load(['pos', 'ner-ontonotes-fast'])
-    tagger.predict(sentences)
-
-    topic_pos_tags = set(["NN", "NNP", "NNS"]) #nouns, proper nouns, plural nouns
-
-    stop_words = set(stopwords.words('english'))
-    Lem = WordNetLemmatizer()
-
+    #turn all utterances into Sentence objects for flair
+    sentences = [Sentence(text=u) for u in tdf["utterance"]]
+    #Predict ~10s (6s using fast)
+    tagger.predict(sentences, mini_batch_size = 64)
     #get all nouns in wordNet
-    all_nouns = set([s.name().split(".")[0] for s in wn.all_synsets('n')])
+    #all_nouns = set([s.name().split(".")[0] for s in wn.all_synsets('n')])
 
     sentence_keywords = []
     for sent, text in zip(sentences, tdf["utterance"]):
@@ -271,16 +247,6 @@ def add_topics(tdf, max_gap, min_sim, glove):
     tdf.replace("", np.nan, inplace = True)
     tdf["topics"].fillna(method="ffill", inplace = True)
 
-
-def renumerate(sequence, start=None):
-    ''' reverse enumerate'''
-    if start is None:
-        start = len(sequence) - 1
-    n = start
-    for elem in sequence[::-1]:
-        yield n, elem
-        n -= 1
-
 def get_matches(current_kws, next_kws, min_sim, kw_glove):
 
     matches = set()
@@ -299,40 +265,16 @@ if __name__ == "__main__":
     max_gap = 10 #max number of sentences between two topic_word matches for it to no longer be one topic
     min_sim = 0.65
 
-
-    #load glove:
+    #load glove: ~ 9s
     glove = load_pretrained_glove("../embeddings/glove.840B.300d.txt")
-
     transcript_dfs = get_all_annotated_transcripts(force_rebuild=False)
-    for transcript_df in transcript_dfs:
+    for transcript_df in tqdm(transcript_dfs):
         enhance_transcript_df(transcript_df)
         transcript_df["utterance"] = transcript_df["utterance"].str.replace(" ' ", "'")
         transcript_df["utterance"] = transcript_df["utterance"].str.replace(" ’ ", "’")
     tdf = transcript_dfs[2]
 
 #a = tdf.loc[75, "utterance"].split(" ")
-    tdf = add_topic_words(tdf)
+    tdf = add_key_words(tdf)
     add_topics(tdf, max_gap, min_sim, glove)
-
     tdf.head(500)
-#%%
-
-all_keywords = []
-
-for sentence in sentences:
-    keywords = set()
-    #print(sentence.to_tagged_string())
-    #print(sentence.to_dict(tag_type="ner"))
-    for entity in sentence.get_spans('ner'):
-        if entity.labels[0].value in ["CARDINAL", "ORDINAL", "TIME", "PERCENT"]:
-            continue
-        keywords.add(entity.text)
-        #print("E", entity)
-
-    for entity in sentence.get_spans('pos'):
-        if entity.labels[0].value.startswith("NN"):
-            keywords.add(entity.text)
-
-    all_keywords.append(keywords)
-
-all_keywords
