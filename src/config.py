@@ -25,6 +25,32 @@ paths = dict(
     figures = '../figures/',
 )
 
+topics = dict(
+
+    #singular person words that were wrongly classified as topic words, are filtered out manually
+    #Note some words, like "time" are unlikely to be the topic of conversation
+    #and more used in sentences such as "last time you did X" or "I remember"
+    #a time when..."
+    # other words are just nouns that are filler words such as "guy, thing, man"
+    # some words are mostly used in combination with "of" such as "the process of"
+    # "kind of" "sort of " are filtered
+    #Don't is classified as Don (name)
+    manual_filter_words = set(["get", "thing", "man", "go", "okay", "“", "Don",
+                               "nobody", "are", "wow", "woah", "whoa", "perfect",
+                               "way", "guy", "stuff", "day", "iteration", "bit",
+                               "inch", "meter", "millimeter", "centimeter", "yard",
+                               "kilometer", "mile", "foot", "time",
+                               "Does", "process", "lot", "kind", "sort", "sometimes",
+                               "somewhere", "something"]),
+
+    filler_das = set(['Appreciation', 'Agree/Accept', 'Acknowledge (Backchannel)',
+        'Repeat-phrase', 'Yes answers', 'Response Acknowledgement',
+        'Affirmative non-yes answers', 'Backchannel in question form',
+        'Negative non-no answers', 'Uninterpretable', 'Signal-non-understanding',
+        'Hold before answer/agreement', 'Action-directive', 'Thanking'])
+
+)
+
 # disable huge number of information prints by tensorflow
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
