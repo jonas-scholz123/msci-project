@@ -1,30 +1,28 @@
-import tensorflow_hub as hub
-import pickle
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 from pprint import pprint
-from collections import defaultdict
-from sklearn.cluster import DBSCAN
 from utils import load_one_transcript, load_all_transcripts, load_pretrained_glove
 from predictDA import get_all_annotated_transcripts
 from tqdm import tqdm
-from gensim.models import word2vec
 from analyse_transcripts import enhance_transcript_df
 import pandas as pd
-import config
 import nltk
 from nltk.corpus import wordnet as wn
 from nltk.corpus import stopwords
 from nltk.corpus.reader import NOUN
 from nltk.stem.wordnet import WordNetLemmatizer
-from polyglot.text import Text
 from collections import defaultdict
 from itertools import product
+
+from flair.data import Sentence
+from flair.tokenization import SegtokSentenceSplitter
+from flair.models import MultiTagger
 
 pd.options.display.width = 0
 pd.options.display.max_rows = 500
 
+import config
 #%%
 def cosine_similarity(vec1, vec2):
     if vec1 is not None and vec2 is not None:
