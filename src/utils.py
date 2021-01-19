@@ -238,17 +238,20 @@ def load_mrda_data(detail_level = 0):
             labels_list.append(ids)
     return utterances_list, labels_list
 
-
 def load_all_transcripts(transcript_dir = "../transcripts/", chunked = True,
-    chunk_size = 100):
+    chunk_size = 100, return_fnames=False):
 
     transcripts = []
+    fnames = []
 
     for fpath in os.listdir(transcript_dir):
         entries = load_one_transcript(transcript_dir + fpath,
             chunked = chunked, chunk_size=chunk_size)
         transcripts.append(entries)
+        fnames.append(fpath.split(".")[-2])
 
+    if return_fnames:
+        return transcripts, fnames
     return transcripts
 
 
