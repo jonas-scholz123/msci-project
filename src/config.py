@@ -41,7 +41,12 @@ topics = dict(
                                "inch", "meter", "millimeter", "centimeter", "yard",
                                "kilometer", "mile", "foot", "time",
                                "Does", "process", "lot", "kind", "sort", "sometimes",
-                               "somewhere", "something"]),
+                               "somewhere", "something", "thank", "'", "’", "thanks",
+                               "shit", "everything", "somebody", "anybody", "anyone",
+                               "dude", "couple", "good", "need", "point", "reason",
+                               "someone", "thinking", "thought", "care", "whoop",
+                               "doubt", "everyone", "everything", "everybody",
+                               "fact", "anything"]),
 
     filler_das = set(['Appreciation', 'Agree/Accept', 'Acknowledge (Backchannel)',
         'Repeat-phrase', 'Yes answers', 'Response Acknowledgement',
