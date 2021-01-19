@@ -60,11 +60,11 @@ def in_word_net(word, Lem):
     return len(wn.synsets(word, NOUN)) > 0
 
 
-def add_by_ner(keywords, sentence):
+def add_by_ner(keywords, sentence, Lem):
     for entity in sentence.get_spans('ner-ontonotes-fast'):
         if entity.labels[0].value in ["CARDINAL", "ORDINAL", "TIME", "PERCENT"]:
             continue
-        keywords.add(entity.text)
+        keywords.add(Lem.lemmatize(entity.text.lower().replace(" ", "_")))
     return keywords
 
 def add_by_pos(keywords, sentence, Lem, fast=True):
@@ -75,7 +75,7 @@ def add_by_pos(keywords, sentence, Lem, fast=True):
     for entity in sentence.get_spans(pos_type):
         pos = entity.labels[0].value
         if pos.startswith("NN"):
-            keywords.add(Lem.lemmatize(entity.text))
+            keywords.add(Lem.lemmatize(entity.text.lower()))
     return keywords
 
 def add_all_nouns(keywords, tokens, Lem):
@@ -90,7 +90,7 @@ def add_bi_grams(keywords, tokens, Lem):
     for words in zip(tokens, tokens[1:]):
         combined = "_".join(words)
         if in_word_net(combined, Lem):
-            keywords.add(combined)
+            keywords.add(Lem.lemmatize(combined.lower()))
     return keywords
 
 def remove_manual_filter_words(keywords, manual_filter_words, Lem):
@@ -193,7 +193,7 @@ def add_key_words(tdf, tagger, Lem, stop_words, filler_das, manual_filter_words)
         #keywords = add_by_pos(keywords, tokens, Lem, topic_pos_tags, all_nouns)
         #keywords = add_by_ner(keywords, tokens)
         keywords = add_by_pos(keywords, sent, Lem)
-        keywords = add_by_ner(keywords, sent)
+        keywords = add_by_ner(keywords, sent, Lem)
         keywords = add_bi_grams(keywords, tokens, Lem)
         # can use this with tf-idf later, can get rid of POS
         #keywords = add_all_nouns(keywords, tokens, Lem)
@@ -224,6 +224,7 @@ def get_end_of_topic(key_words, topic_set, start_index, max_gap, min_sim, kw_glo
     return key_words.index[-1] #only reaches this point at end of convo
 
 def add_topics(tdf, max_gap, min_sim, glove):
+    #TODO: Clump words that only appear together into one topic!
     topics = defaultdict(list)
 
     key_words = tdf[~tdf["key_words"].isnull()]["key_words"]
