@@ -1,32 +1,13 @@
 import matplotlib.pyplot as plt
 #%matplotlib inline
 from matplotlib.patches import Ellipse, Circle, Arrow, ConnectionPatch
-from classifier import Classifier
 import numpy.random as rnd
 import numpy as np
 import pandas as pd
 
-if __name__ == "__main__":
-    fpath = "../data/podcasts/joe_rogan_elon_musk_may_2020.txt"
-
-    classifier = Classifier()
-    classifier.read_file(fpath)
-    #classifier.classify_emotion()
-    #classifier.classify_disagreement()
-    #classifier.iterate_topic_words()
-    classifier.extract_important_words(method = "tf-ifd")
-    classifier.post_process_imp_words()
-    classifier.classify_topical_similarity()
-    classifier.make_branches()
-    classifier.make_dissimilarity_matrix()
-    classifier.mds_topic_similarity()
-
-    untouched = classifier.dissimilarity.copy()
-    classifier.dissimilarity = np.nan_to_num(classifier.dissimilarity, copy = True, nan=0.5)
-
 class Visualiser():
 
-    def __init__(self):
+    def __init__(self, max_nodes):
 
         #Sentence to node
         self.s2n = {}
@@ -35,55 +16,78 @@ class Visualiser():
         self.nodes = []
 
         #position data
-        self.y = 0
-        self.delta_y = 1 #depth gained per timestep
+        #self.y = 0
+        #self.delta_y = 1 #depth gained per timestep
         self.min_x = 0
         self.max_x = 0
+        self.min_y = 0
+        self.max_y = 0
+
+        self.delta_y = 4 #height difference between topics
 
         self.width = 10
 
         self.node_radius = 0.3
 
-        self.fig = plt.figure(0, figsize = (10, 10))
+        self.fig = plt.figure(0, figsize = (200, 2))
         self.ax = self.fig.add_subplot(111, aspect='equal')
 
-    def add_node(self, x, r = 0.3, normalised = True):
-        if normalised:
-            x = self.width * x
-        self.set_min_max(x)
-        node = Circle((x, self.y), self.node_radius)
+        self.nr_objects = np.zeros(max_nodes)
+
+    def add_node(self, x, y, r = 0.3, normalised = True):
+        node = Circle((x, y), self.node_radius)
         self.ax.add_artist(node)
         node.set_facecolor("white")
         node.set_edgecolor("black")
         self.nodes.append(node)
 
-        self.y -= self.delta_y
-
-    def set_min_max(self, x):
         self.min_x = min(self.min_x, x)
         self.max_x = max(self.max_x, x)
+        self.min_y = min(self.min_y, y)
+        self.max_y = max(self.max_y, y)
+        return node
+
+    def add_section(self, x0, x1, s, color):
+        y = self.nr_objects[x0:x1].max() * self.delta_y
+        n0 = self.add_node(x0, y)
+        n1 = self.add_node(x1, y)
+        self.connect_nodes(n0, n1, color = color)
+        plt.annotate(s, ((x1+x0)/2, y + self.delta_y/3), color=color, ha="center")
+
+    def set_axes(self):
+        self.ax.set_xlim(self.min_x - 5, self.max_x + 5)
+        self.ax.set_ylim(self.min_y - 1, self.max_y + 1)
 
     def show_fig(self):
-        self.ax.set_xlim(self.min_x - 5, self.max_x + 5)
-        self.ax.set_ylim(self.y - 5, 2)
         #self.fig.show()
+        self.set_axes()
         plt.show()
 
-    def connect_nodes(self, n0, nf):
+    def save_fig(self):
+        self.set_axes()
+        plt.savefig("../figures/topic_vis.pdf")
+
+    def connect_nodes(self, n0, nf, color = None):
         x0, y0 = n0.center
         xf, yf = nf.center
 
+        self.nr_objects[int(x0) : int(xf)] += 1
+
         con = ConnectionPatch(n0.center, nf.center, "data", "data", zorder = 0)
+        con.set_linewidth(4)
+        if color:
+            con.set_edgecolor(color)
         self.ax.add_artist(con)
 
 #%%
 import pandas as pd
+vis = Visualiser()
 pd.set_option("display.max_rows", None)
-#for i in range(25):
-#    x = rnd.randint(-5, 5)
-#    vis.add_node(x)
-#    vis.connect_nodes(vis.nodes[i - 1], vis.nodes[i])
-#vis.show_fig()
+for i in range(25):
+    x = rnd.randint(-5, 5)
+    vis.add_node(x)
+    vis.connect_nodes(vis.nodes[i - 1], vis.nodes[i])
+vis.show_fig()
 
 vis = Visualiser()
 
@@ -95,4 +99,78 @@ for branch, x in zip(classifier.branches, classifier.x_branches):
     for sentence in branch.values:
         vis.add_node(x)
         vis.connect_nodes(vis.nodes[-1], vis.nodes[-2])
+vis.show_fig()
+
+#%%
+
+tdf = pd.read_pickle("../processed_transcripts/joe_rogan_elon_musk.pkl")
+
+tdf["topic_count"] = tdf["topics"].apply(lambda x: len(x) if type(x) == list else 0)
+
+def idx_to_ranges(idx):
+    starts = [idx[0]]
+    ends = []
+
+    prev = idx[0]
+    for j, index in enumerate(idx[1:]):
+        if index == prev + 1:
+            prev = index
+            continue
+        else:
+            prev = index
+            ends.append(idx[j])
+            starts.append(index)
+    ends.append(idx[-1])
+    return list(zip(starts, ends))
+
+def get_sorted_topics(topic_ranges):
+    topic_occurences = {}
+    for t, trs in topic_ranges.items():
+        cum_sum = 0
+        for tr in trs:
+            cum_sum += tr[1] - tr[0]
+        topic_occurences[t] = cum_sum
+    return sorted(list(topic_occurences.items()), key=lambda x: x[1], reverse=True)
+
+def get_topic_colors(topic_occurences):
+    topic_colors = {}
+    color_count = 0
+    nr_colors = 10
+    for topic, _ in topic_occurences:
+        color_count += 1
+        color = "C" + str(color_count % nr_colors)
+        topic_colors[topic] = color
+    return topic_colors
+
+
+topic_ranges = {}
+
+topic_words = set(sum([t for t in tdf["topics"] if type(t) == list], []))
+topic_strings = tdf["topics"].apply(lambda x: ",".join(x) if type(x) == list else "")
+
+for tw in topic_words:
+    topic_ranges[tw] = idx_to_ranges(
+        topic_strings[topic_strings.str.contains(tw)].index)
+
+tcs = get_topic_colors(get_sorted_topics(topic_ranges))
+#%%
+
+vis = Visualiser()
+vis.width = 300
+
+n1 = vis.add_node(0, 0)
+y = 0
+delta_y = 1
+
+n2 = vis.add_node(0, 1)
+vis.connect_nodes(n1, n2)
+#%%
+vis = Visualiser(len(tdf))
+
+for w, trs in topic_ranges.items():
+    for tr in trs:
+        vis.add_section(tr[0], tr[1], w, tcs[w])
+        #plt.annotate(w, ((tr[1] + tr[0])/2, 1), color=tcs[w], ha="center")
+
+vis.save_fig()
 vis.show_fig()
