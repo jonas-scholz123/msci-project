@@ -5,7 +5,6 @@ from pprint import pprint
 from utils import load_one_transcript, load_all_transcripts, load_pretrained_glove
 from predictDA import get_all_annotated_transcripts
 from tqdm import tqdm
-from analyse_transcripts import enhance_transcript_df
 import pandas as pd
 import nltk
 from nltk.corpus import wordnet as wn
@@ -18,9 +17,6 @@ from itertools import product
 from flair.data import Sentence
 from flair.tokenization import SegtokSentenceSplitter
 from flair.models import MultiTagger
-
-pd.options.display.width = 0
-pd.options.display.max_rows = 500
 
 import config
 #%%
@@ -65,14 +61,18 @@ def in_word_net(word, Lem):
 
 
 def add_by_ner(keywords, sentence):
-    for entity in sentence.get_spans('ner'):
+    for entity in sentence.get_spans('ner-ontonotes-fast'):
         if entity.labels[0].value in ["CARDINAL", "ORDINAL", "TIME", "PERCENT"]:
             continue
         keywords.add(entity.text)
     return keywords
 
-def add_by_pos(keywords, sentence, Lem):
-    for entity in sentence.get_spans('pos'):
+def add_by_pos(keywords, sentence, Lem, fast=True):
+    if fast:
+        pos_type = 'pos-fast'
+    else:
+        pos_type = 'pos'
+    for entity in sentence.get_spans(pos_type):
         pos = entity.labels[0].value
         if pos.startswith("NN"):
             keywords.add(Lem.lemmatize(entity.text))
@@ -116,10 +116,21 @@ def remove_partial_words(keywords):
     for w in to_remove: keywords.remove(w)
     return keywords
 
+def remove_len_1_tokens(keywords):
+    to_remove = set()
+    for kw in keywords:
+        if len(kw) < 2:
+            to_remove.add(kw)
+    for w in to_remove: keywords.remove(w)
+    return keywords
+
 def add_topics_to_dfs(dfs):
     '''
     Wrapper of topic classification for multiple DFs, to cache models etc.
     '''
+
+    if not dfs:
+        return []
 
     #things needed for topics extraction
     #load flair model ~ 11s
@@ -136,6 +147,7 @@ def add_topics_to_dfs(dfs):
     print("adding topics... this takes a while")
     #load glove: ~ 9s
     glove = load_pretrained_glove("../embeddings/glove.840B.300d.txt")
+
     dfs = [add_topics(
                 add_key_words(
                     tdf,
@@ -187,6 +199,7 @@ def add_key_words(tdf, tagger, Lem, stop_words, filler_das, manual_filter_words)
         #keywords = add_all_nouns(keywords, tokens, Lem)
         keywords = remove_manual_filter_words(keywords, manual_filter_words, Lem)
         keywords = remove_partial_words(keywords)
+        keywords = remove_len_1_tokens(keywords)
         sentence_keywords.append(keywords)
 
     tdf["key_words"] = sentence_keywords
@@ -229,17 +242,18 @@ def add_topics(tdf, max_gap, min_sim, glove):
             if end != i:
                 topics[topic_word].append((i, end))
 
-    tdf["topics"] = np.empty((len(tdf), 0)).tolist() #set topics to empty list
+    tdf["topics"] = [list() for _ in range(len(tdf))]
 
-    tdf["topics"] = ""
     #append topics
     for topic, index_pairs in topics.items():
         for start, end in index_pairs:
-            tdf.loc[start : end, "topics"] += topic + ", "
+            tdf.loc[start : end, "topics"] = tdf.loc[start : end, "topics"].apply(
+                                                            lambda x: x + [topic])
 
-    # no topic fields are filled w previous topics
-    tdf.replace("", np.nan, inplace = True)
+    # empty topic fields are filled w previous topics
+    tdf["topics"] = tdf["topics"].apply(lambda x: np.nan if len(x) == 0 else x)
     tdf["topics"].fillna(method="ffill", inplace = True)
+    return tdf
 
 def get_matches(current_kws, next_kws, min_sim, kw_glove):
 
@@ -254,13 +268,13 @@ def get_matches(current_kws, next_kws, min_sim, kw_glove):
         return False
     return matches
 
+
 if __name__ == "__main__":
 
     transcript_dfs = get_all_annotated_transcripts(force_rebuild=False)
     for transcript_df in tqdm(transcript_dfs):
-        enhance_transcript_df(transcript_df)
         transcript_df["utterance"] = transcript_df["utterance"].str.replace(" ' ", "'")
         transcript_df["utterance"] = transcript_df["utterance"].str.replace(" ’ ", "’")
-    tdf = transcript_dfs[2]
+    tdf = transcript_dfs[0]
     add_topics_to_dfs([tdf])
     tdf.head(500)
