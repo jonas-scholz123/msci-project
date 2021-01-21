@@ -46,7 +46,10 @@ topics = dict(
                                "dude", "couple", "good", "need", "point", "reason",
                                "someone", "thinking", "thought", "care", "whoop",
                                "doubt", "everyone", "everything", "everybody",
-                               "fact", "anything", "bunch", "others"]),
+                               "fact", "anything", "bunch", "others", "one",
+                               "nothing", "nobody", "noone", "responsibility",
+                               "well", "thing", "case", "moment", "people",
+                               "guess", "side"]), #"people" might be better in than out
 
     filler_das = set(['Appreciation', 'Agree/Accept', 'Acknowledge (Backchannel)',
         'Repeat-phrase', 'Yes answers', 'Response Acknowledgement',
