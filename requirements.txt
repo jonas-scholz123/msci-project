@@ -5,39 +5,46 @@
 # src/utils.py: 10,11
 Keras == 2.4.2
 
+# src/topics.py: 17,18,19
+flair
+
 # src/analyse_transcripts.py: 1
-# src/topics.py: 4
-# src/visualiser.py: 3
-matplotlib == 3.1.1
+# src/topics.py: 3
+# src/visualiser.py: 3,8,9
+matplotlib
 
 # src/swda.py: 31,32
+# src/topics.py: 9,10,11,12,13
 # src/utils.py: 4
-nltk == 3.5
+nltk
 
 # src/analyse_transcripts.py: 4
 # src/predictDA.py: 1
-# src/topics.py: 2
+# src/process_transcripts.py: 4
+# src/topics.py: 1
 # src/train_bilstm_crf.py: 4
 # src/utils.py: 1
-# src/visualiser.py: 5,6
+# src/visualiser.py: 4,5
 numpy == 1.17.4
 
 # src/analyse_transcripts.py: 5
 # src/predictDA.py: 2
+# src/topics.py: 8,272
 # src/utils.py: 8
-# src/visualiser.py: 7,80
+# src/visualiser.py: 6,192
 pandas == 0.25.3
 
-# src/topics.py: 7
-# src/train_bilstm_crf.py: 13
-scikit_learn == 0.23.1
-
-# src/analyse_transcripts.py: 237
+# src/analyse_transcripts.py: 205
 scipy == 1.4.1
 
 # src/analyse_transcripts.py: 2
-# src/topics.py: 3
+# src/topics.py: 2
 seaborn == 0.10.1
+
+# src/topics.py: 283
+# src/train_bilstm_crf.py: 13
+# src/visualiser.py: 218
+sklearn
 
 # src/predictDA.py: 7
 # src/train_bilstm_crf.py: 6
@@ -46,9 +53,8 @@ tensorflow == 2.3.0
 # src/bilstm_crf.py: 5
 tf2crf == 0.1.27
 
-# src/topics.py: 1
-tf_hub_nightly == 0.12.0.dev202101120006
-
 # src/analyse_transcripts.py: 9
+# src/process_transcripts.py: 2
+# src/topics.py: 7
 # src/utils.py: 7
-tqdm == 4.48.0
+tqdm
