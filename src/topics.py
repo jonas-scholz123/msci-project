@@ -5,17 +5,44 @@ from utils import load_all_transcripts, load_pretrained_glove
 from predictDA import get_all_annotated_transcripts
 from tqdm import tqdm
 import nltk
+from pprint import pprint
 from nltk.corpus import wordnet as wn
 from nltk.corpus import stopwords
 from nltk.corpus.reader import NOUN
 from nltk.stem.wordnet import WordNetLemmatizer
 from collections import defaultdict
 from itertools import product
+from queue import Queue
 
 from flair.data import Sentence
 from flair.models import MultiTagger
 
 import config
+
+
+class TopicNode():
+
+    def __init__(self, topic, start, end):
+        self.topic = topic
+        self.start = start
+        self.end = end
+        self.neighbours = set()
+        self.visited = False
+
+
+class TopicNetwork():
+    def __init__(self):
+        self.nodes = []
+        self.edges = set()
+
+    def add_node(self, topic, start, end):
+        n = TopicNode(topic, start, end)
+        self.nodes.append(n)
+        return n
+
+    def connect_nodes(self, n1, n2):
+        self.edges.add((n1, n2))
+        n1.neighbours.add(n2) #directed
 
 
 class TopicExtractor:
@@ -32,6 +59,7 @@ class TopicExtractor:
         #things needed for topic segmentation
         self.max_gap = config.topics["max_gap"]
         self.min_sim = config.topics["min_sim"]
+        self.min_topic_length = config.topics["min_topic_length"]
         #load glove: ~ 9s
         self.glove = load_pretrained_glove("../embeddings/glove.840B.300d.txt")
 
@@ -151,7 +179,7 @@ class TopicExtractor:
         tdf.loc[tdf["da_label"].isin(self.filler_das), "key_words"] = None
         return tdf
 
-    def get_end_of_topic(self, key_words, topic_set, start_index):
+    def get_end_of_topic(self, key_words, topic_set, orig_word, start_index):
         '''
         goes through following keywords (within max_gap) and checks if matches
         are found, if so, calls itself recursively to check matching keyword.
@@ -161,41 +189,54 @@ class TopicExtractor:
         '''
         for j, next_kws in key_words.loc[start_index + 1:].iteritems():
             if j - start_index > self.max_gap:
-                return start_index
-            matches = self.get_matches(topic_set, next_kws)
+                return start_index, topic_set
+            # topic is all matching keywords with original word
+            matches = self.get_matches(set([orig_word]), next_kws)
             if matches:
-                return self.get_end_of_topic(key_words, topic_set, j)
-        return key_words.index[-1]  # only reaches this point at end of convo
+                printable = False
+                #if "business" in topic_set:
+                    #printable = True
+                    #print("found business in: ", topic_set)
+                    #print("matches: ", matches)
+                topic_set = topic_set.union(matches)
+                #if printable:
+                    #print('adding matches: ', topic_set)
+                return self.get_end_of_topic(key_words, topic_set,
+                                             orig_word, j)
+        return key_words.index[-1], topic_set  # only reaches this point at end of convo
 
     def add_topics(self, tdf):
         topics = defaultdict(list)
+        topic_ranges = defaultdict(list)
 
         key_words = tdf[~tdf["key_words"].isnull()]["key_words"]
         self.all_keywords = set().union(*[k for k in key_words if k])
         self.kw_glove = {kw: self.glove[kw]
                          for kw in self.all_keywords if kw in self.glove}
-
         for i, kws in key_words.iteritems():
             for topic_word in kws:
                 # Always take maximum topic, range, don't check again if topic
                 # already marked for a range containing i
                 if (topics[topic_word]
-                    and topics[topic_word][-1][0] < i
-                        and topics[topic_word][-1][1] > i):
+                    and topics[topic_word][-1][0] <= i
+                        and topics[topic_word][-1][1] >= i):
                     continue
-                topic_set = set([topic_word])
-                end = self.get_end_of_topic(key_words, topic_set, i)
-                if end != i:
-                    topics[topic_word].append((i, end))
 
+                topic_set = set([topic_word])
+                end, topic_set = self.get_end_of_topic(key_words,
+                                                       topic_set, topic_word, i)
+                if end - i >= self.min_topic_length:
+                    topic_ranges[(i, end)].append(topic_set)
+                    for tw in topic_set:
+                        topics[tw].append((i, end))
+        clustered_topics = self.get_clustered_topics(topic_ranges)
         tdf["topics"] = [list() for _ in range(len(tdf))]
 
         # append topics
-        for topic, index_pairs in topics.items():
-            for start, end in index_pairs:
-                tdf.loc[start: end, "topics"] = tdf.loc[start: end,
-                                                        "topics"].apply(
-                                                        lambda x: x + [topic])
+        for (start, end), topics in clustered_topics.items():
+            for topic in topics:
+                tdf.loc[start:end, "topics"] = tdf.loc[start:end, "topics"].apply(
+                                                    lambda x: x + [topic])
 
         # empty topic fields are filled w previous topics
         tdf["topics"] = tdf["topics"].apply(lambda x: np.nan if len(x) == 0
@@ -213,10 +254,52 @@ class TopicExtractor:
                     > self.min_sim):
                 matches.add(kw1)
                 matches.add(kw2)
-                # print("added to matches: ", kw1, kw2)
         if len(matches) == 0:
             return False
         return matches
+
+    def get_clustered_topics(self, topic_ranges):
+
+        tr_list = list(topic_ranges.items())
+        net = TopicNetwork()
+
+        for tr, topics in tr_list:
+            for t in topics:
+                net.add_node(t, tr[0], tr[1])
+
+        for i, n1 in enumerate(net.nodes):
+            for n2 in net.nodes[i:]:
+                if n1.end < n2.start:
+                    break
+                t1 = n1.topic
+                t2 = n2.topic
+
+                if self.get_matches(t1, t2):
+                    net.connect_nodes(n1, n2)
+        true_topics = defaultdict(list)
+        for n in net.nodes:
+            t, tr = self.cluster_topic_nodes(n)
+            true_topics[tr].append(t)
+        return true_topics
+
+    def cluster_topic_nodes(self, n):
+        q = Queue()
+        topic = set()
+        start = n.start
+        end = n.end
+        q.put(n)
+
+        while not q.empty():
+            n.visited = True
+            topic = topic.union(n.topic)
+            end = max(end, n.end)
+
+            for next in n.neighbours:
+                if not next.visited:
+                    q.put(next)
+            n = q.get()
+
+        return topic, (start, end)
 
     def cosine_similarity(self, vec1, vec2):
         if vec1 is None or vec2 is None:
@@ -272,9 +355,10 @@ if __name__ == "__main__":
 
     dfs = get_all_annotated_transcripts()
     tdf = dfs[2]
-    dfs = [tdf]
 
-    te.process(dfs)
+    tdf = te.process(tdf)
+
+    tdf.head(50)
     # glove = load_pretrained_glove("../embeddings/glove.840B.300d.txt")
     # %%
     # import pandas as pd
