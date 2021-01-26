@@ -49,7 +49,8 @@ topics = dict(
                                "fact", "anything", "bunch", "others", "one",
                                "nothing", "nobody", "noone", "responsibility",
                                "well", "thing", "case", "moment", "people",
-                               "guess", "side"]), #"people" might be better in than out
+                               "guess", "side", "problem", "question", "implication",
+                               "lack", "use", "place", "dope", "world"]), #"people" might be better in than out
 
     filler_das = set(['Appreciation', 'Agree/Accept', 'Acknowledge (Backchannel)',
         'Repeat-phrase', 'Yes answers', 'Response Acknowledgement',
@@ -58,7 +59,8 @@ topics = dict(
         'Hold before answer/agreement', 'Action-directive', 'Thanking']),
 
     max_gap = 10, #max number of sentences between two topic_word matches for it to no longer be one topic
-    min_sim = 0.65,
+    min_sim = 0.5,
+    min_topic_length = 1,
 )
 
 # disable huge number of information prints by tensorflow
