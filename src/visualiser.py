@@ -4,6 +4,11 @@ from matplotlib.patches import Ellipse, Circle, Arrow, ConnectionPatch
 import numpy.random as rnd
 import numpy as np
 import pandas as pd
+import config
+from matplotlib import cm
+import matplotlib as mpl
+
+from utils import load_pretrained_glove
 
 from collections import defaultdict
 
@@ -126,7 +131,7 @@ def get_topic_colors(topic_occurences):
         topic_colors[topic] = color
     return topic_colors
 
-def cluster_sub_topics(inverse_topic_ranges):
+def cluster_sub_topics(inverse_topic_ranges, kw_glove):
     new_itr = defaultdict(list)
     itr_tuples = sorted(list(inverse_topic_ranges.items()),
         key=lambda x:(x[0][0], -x[0][1])) #sort to have low first, high second index
@@ -144,7 +149,8 @@ def cluster_sub_topics(inverse_topic_ranges):
         for j, (next_tr, next_words) in enumerate(itr_tuples[i + 1:], i+1):
 
             #if same starting position, given that end position is smaller because of sorting
-            if next_tr[1] <= tr[1]:
+            #if next_tr[1] <= tr[1] and next_tr[0] >= tr[0]:
+            if next_tr[1] == tr[1]:
                 [new_itr[tr].append(w) for w in next_words]
                 skips += 1
             else:
@@ -164,10 +170,31 @@ def invert_dict_of_lists(d):
 
     return new_dict
 
+def make_1d_embeddings(kws_embeddings):
+    pca = PCA(1)
+    embeddings_1d = pca.fit_transform(kws_embeddings)
+    return np.array([e[0] for e in embeddings_1d]), pca
+
+def get_colormap(embeddings_1d):
+
+    #normalise
+    #embeddings_1d += abs(embeddings_1d.min())
+    #embeddings_1d /= embeddings_1d.max()
+
+    #tups = list(zip(kws_embeddings.keys(), embeddings_1d))
+    #sorted_tups = sorted(tups, key = lambda x: x[1])
+
+
+    norm = mpl.colors.Normalize(embeddings_1d.min(), embeddings_1d.max())
+    cmap = cm.tab20c
+    return cm.ScalarMappable(norm=norm, cmap=cmap)
 
 import pandas as pd
-
-transcript_name = "joe_rogan_kanye_west"
+#%%
+glove = load_pretrained_glove("../embeddings/glove.840B.300d.txt")
+#%%
+#transcript_name = "joe_rogan_elon_musk"
+transcript_name = "sam_harris_nicholas_christakis"
 tdf = pd.read_pickle("../processed_transcripts/" + transcript_name + ".pkl")
 tdf
 pd.options.display.max_rows = None
@@ -187,15 +214,52 @@ inverse_topic_ranges = cluster_sub_topics(inverse_topic_ranges)
 
 tcs = get_topic_colors(get_sorted_topics(topic_ranges))
 vis = Visualiser(len(tdf))
-min_topic_length = 5
-#
-cc = 0
+min_topic_length = 1
+
+from sklearn.decomposition import PCA
+
+all_kws = list(set([w for words in inverse_topic_ranges.values() for w in words]))
+kws_embeddings = {kw : glove[kw] for kw in all_kws if kw in glove.keys()}
+
+embeddings_1d, pca = make_1d_embeddings(list(kws_embeddings.values()))
+kws_embeddings1d = {kw : e for kw, e in zip(list(kws_embeddings.keys()), embeddings_1d)}
+
+scalar_to_color = get_colormap(embeddings_1d)
 for tr, words in inverse_topic_ranges.items():
     if tr[1] - tr[0] < min_topic_length:
         continue
-    cc += 1
     joined = ", ".join(words)
-    vis.add_section(tr[0], tr[1], joined, "C" + str(cc % 10))
+
+    word_embeddings = [kws_embeddings[w] for w in words if w in kws_embeddings.keys()]
+    if word_embeddings:
+        embedding_avg_1d = pca.transform(np.array(word_embeddings).mean(axis=0).reshape(1, -1))[0][0]
+        color = scalar_to_color.to_rgba(embedding_avg_1d)
+    else:
+        color = 'grey'
+    vis.add_section(tr[0], tr[1], joined, color)
 
 vis.save_fig(transcript_name)
 vis.show_fig()
+
+
+#import pke
+#
+## initialize keyphrase extraction model, here TopicRank
+#extractor = pke.unsupervised.TopicRank()
+#
+## load the content of the document, here document is expected to be in raw
+## format (i.e. a simple text file) and preprocessing is carried out using spacy
+#extractor.load_document(input=' '.join(tdf['utterance']), language='en')
+#
+## keyphrase candidate selection, in the case of TopicRank: sequences of nouns
+## and adjectives (i.e. `(Noun|Adj)*`)
+#extractor.candidate_selection()
+#
+## candidate weighting, in the case of TopicRank: using a random walk algorithm
+#extractor.candidate_weighting()
+#
+## N-best selection, keyphrases contains the 10 highest scored candidates as
+## (keyphrase, score) tuples
+#keyphrases = extractor.get_n_best(n=30)
+
+#keyphrases
