@@ -13,6 +13,7 @@ from nltk.stem.wordnet import WordNetLemmatizer
 from collections import defaultdict
 from itertools import product
 from queue import Queue
+from sklearn.decomposition import PCA
 
 from flair.data import Sentence
 from flair.models import MultiTagger
@@ -48,8 +49,7 @@ class TopicNetwork():
 class TopicExtractor:
 
     def __init__(self):
-        print("Initialising topic models, this takes a while.")
-        self.tagger = MultiTagger.load(['pos-fast', 'ner-ontonotes-fast'])
+        self.models_loaded = False
         # init lematizer
         self.Lem = WordNetLemmatizer()
         self.stop_words = set(stopwords.words('english'))
@@ -60,8 +60,15 @@ class TopicExtractor:
         self.max_gap = config.topics["max_gap"]
         self.min_sim = config.topics["min_sim"]
         self.min_topic_length = config.topics["min_topic_length"]
+        self.min_overlap = 0.2
         #load glove: ~ 9s
+        print("loading glove, this takes a while")
         self.glove = load_pretrained_glove("../embeddings/glove.840B.300d.txt")
+        self.pca = None
+
+    def init_models(self):
+        print("Initialising topic models, this takes a while.")
+        self.tagger = MultiTagger.load(['pos-fast', 'ner-ontonotes-fast'])
 
     def in_word_net(self, word):
         '''
@@ -153,6 +160,9 @@ class TopicExtractor:
         '''
         # TODO: Analogies destroy topic, maybe can't do anything about that
 
+        if not self.models_loaded:
+            self.init_models()
+            self.models_loaded = True
         # turn all utterances into Sentence objects for flair
         sentences = [Sentence(text=u) for u in tdf["utterance"]]
         # Predict ~10s (6s using fast)
@@ -194,18 +204,13 @@ class TopicExtractor:
             matches = self.get_matches(set([orig_word]), next_kws)
             if matches:
                 printable = False
-                #if "business" in topic_set:
-                    #printable = True
-                    #print("found business in: ", topic_set)
-                    #print("matches: ", matches)
                 topic_set = topic_set.union(matches)
-                #if printable:
-                    #print('adding matches: ', topic_set)
                 return self.get_end_of_topic(key_words, topic_set,
                                              orig_word, j)
         return key_words.index[-1], topic_set  # only reaches this point at end of convo
 
-    def add_topics(self, tdf):
+    def add_topics(self, tdf, return_topic_ranges = False):
+        #self = te
         topics = defaultdict(list)
         topic_ranges = defaultdict(list)
 
@@ -242,6 +247,8 @@ class TopicExtractor:
         tdf["topics"] = tdf["topics"].apply(lambda x: np.nan if len(x) == 0
                                             else x)
         tdf["topics"].fillna(method="ffill", inplace=True)
+        if return_topic_ranges:
+            return tdf, clustered_topics
         return tdf
 
     def get_matches(self, current_kws, next_kws):
@@ -259,6 +266,7 @@ class TopicExtractor:
         return matches
 
     def get_clustered_topics(self, topic_ranges):
+        #self = te
 
         tr_list = list(topic_ranges.items())
         net = TopicNetwork()
@@ -268,38 +276,82 @@ class TopicExtractor:
                 net.add_node(t, tr[0], tr[1])
 
         for i, n1 in enumerate(net.nodes):
-            for n2 in net.nodes[i:]:
+            topic = n1.topic
+            for n2 in net.nodes[i + 1:]:
                 if n1.end < n2.start:
                     break
                 t1 = n1.topic
                 t2 = n2.topic
 
-                if self.get_matches(t1, t2):
+                matches = self.get_matches(t1, t2)
+                topic_length = len(t1) + len(t2)
+                if matches and len(matches) >= self.min_overlap * topic_length:
                     net.connect_nodes(n1, n2)
+
         true_topics = defaultdict(list)
         for n in net.nodes:
+            if n.visited:
+                continue
             t, tr = self.cluster_topic_nodes(n)
             true_topics[tr].append(t)
         return true_topics
 
     def cluster_topic_nodes(self, n):
         q = Queue()
-        topic = set()
+        topic = n.topic
         start = n.start
         end = n.end
         q.put(n)
 
         while not q.empty():
             n.visited = True
-            topic = topic.union(n.topic)
+            matches = self.get_matches(topic, n.topic)
+            if not matches:
+                n = q.get()
+                continue
+            # topic = topic.union(n.topic)
+            topic = topic.union(matches)
             end = max(end, n.end)
-
             for next in n.neighbours:
                 if not next.visited:
                     q.put(next)
             n = q.get()
-
         return topic, (start, end)
+
+    def get_all_topics(self, tdf):
+        all_topics = set()
+        for topics in tdf["topics"]:
+            for t in topics:
+                all_topics.add(frozenset(t))
+        return all_topics
+
+    def fit_n_d_embeddings(self, tdf, n):
+        all_topics = self.get_all_topics(tdf)
+
+        pca = PCA(n)
+        embeds = {}
+        for t in all_topics:
+            topic_embeds = []
+            for word in t:
+                embed = self.glove.get(word)
+                if embed is not None:
+                    topic_embeds.append(embed)
+            if topic_embeds:
+                embeds[frozenset(t)] = np.array(topic_embeds).mean(axis=0)
+        self.pca = pca.fit(list(embeds.values()))
+        return list(embeds.values())
+
+    def get_n_d_embedding(self, topic, n):
+        if self.pca is None:
+            print("No pca fitted yet, run fit_n_d_embeddings()")
+            return
+        embeds = [self.glove[w] for w in topic if w in self.glove.keys()]
+
+        if embeds:
+            mean = np.array(embeds).mean(axis=0)
+            return self.pca.transform([mean])[0][0]
+        return False
+
 
     def cosine_similarity(self, vec1, vec2):
         if vec1 is None or vec2 is None:
@@ -353,19 +405,7 @@ def plot_similarity(labels, features, rotation):
 if __name__ == "__main__":
     te = TopicExtractor()
 
-    dfs = get_all_annotated_transcripts()
-    tdf = dfs[2]
+    import pandas as pd
 
-    tdf = te.process(tdf)
-
-    tdf.head(50)
-    # glove = load_pretrained_glove("../embeddings/glove.840B.300d.txt")
-    # %%
-    # import pandas as pd
-    # tdf = pd.read_pickle("../processed_transcripts/joe_rogan_elon_musk.pkl")
-    # tdf.head(50)
-    # all_kws = list(set([kw for kws in tdf["key_words"] if kws for kw in kws]))
-#
-    # kws_embeddings = {kw : glove[kw] for kw in all_kws if kw in glove.keys()}
-    # gloved_kws = [kw for kw in all_kws if kw]
-    # sim_m = make_similarity_matrix(list(kws_embeddings.keys()), list(kws_embeddings.values()))
+    tdf = pd.read_pickle("../processed_transcripts/sam_harris_nicholas_christakis.pkl")
+    tdf, tr = te.add_topics(tdf, return_topic_ranges=True)
