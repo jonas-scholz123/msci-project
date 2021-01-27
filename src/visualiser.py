@@ -16,7 +16,7 @@ class Visualiser():
         # Sentence to node
         self.s2n = {}
 
-        #stores all nodes
+        # stores all nodes
         self.nodes = []
 
         # position data
@@ -27,7 +27,7 @@ class Visualiser():
         self.min_y = 0
         self.max_y = 0
 
-        self.delta_y = 2 # height difference between topics
+        self.delta_y = 2  # height difference between topics
 
         self.width = 10
 
@@ -126,13 +126,10 @@ for tr, topics in topic_ranges.items():
     for topic in topics:
         joined = ", ".join(list(topic))
 
-        try:
-            embedding_1d = te.get_n_d_embedding(topic, 1)
-            if embedding_1d is False:
-                color = 'grey'
-            color = scalar_to_color.to_rgba(embedding_1d)
-        except:
+        embedding_1d = te.get_n_d_embedding(topic, 1)
+        if embedding_1d is False:
             color = 'grey'
+        color = scalar_to_color.to_rgba(embedding_1d)
         vis.add_section(tr[0], tr[1], joined, color)
 
 vis.save_fig(transcript_name)
