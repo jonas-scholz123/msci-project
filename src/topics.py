@@ -14,6 +14,7 @@ from collections import defaultdict
 from itertools import product
 from queue import Queue
 from sklearn.decomposition import PCA
+import pandas as pd
 
 from flair.data import Sentence
 from flair.models import MultiTagger
@@ -209,7 +210,7 @@ class TopicExtractor:
                                              orig_word, j)
         return key_words.index[-1], topic_set  # only reaches this point at end of convo
 
-    def add_topics(self, tdf, return_topic_ranges = False):
+    def add_topics(self, tdf, return_topic_ranges=False):
         #self = te
         topics = defaultdict(list)
         topic_ranges = defaultdict(list)
@@ -247,6 +248,9 @@ class TopicExtractor:
         tdf["topics"] = tdf["topics"].apply(lambda x: np.nan if len(x) == 0
                                             else x)
         tdf["topics"].fillna(method="ffill", inplace=True)
+        isna = tdf['topics'].isna()
+        # replace nans with empty lists again
+        tdf.loc[isna, 'topics'] = pd.Series([[]] * isna.sum()).values
         if return_topic_ranges:
             return tdf, clustered_topics
         return tdf
@@ -322,7 +326,8 @@ class TopicExtractor:
         all_topics = set()
         for topics in tdf["topics"]:
             for t in topics:
-                all_topics.add(frozenset(t))
+                if type(t) == set:
+                    all_topics.add(frozenset(t))
         return all_topics
 
     def fit_n_d_embeddings(self, tdf, n):
@@ -351,7 +356,6 @@ class TopicExtractor:
             mean = np.array(embeds).mean(axis=0)
             return self.pca.transform([mean])[0][0]
         return False
-
 
     def cosine_similarity(self, vec1, vec2):
         if vec1 is None or vec2 is None:
@@ -404,8 +408,5 @@ def plot_similarity(labels, features, rotation):
 #%%
 if __name__ == "__main__":
     te = TopicExtractor()
-
-    import pandas as pd
-
-    tdf = pd.read_pickle("../processed_transcripts/sam_harris_nicholas_christakis.pkl")
+    tdf = pd.read_pickle("../processed_transcripts/joe_rogan_elon_musk.pkl")
     tdf, tr = te.add_topics(tdf, return_topic_ranges=True)
