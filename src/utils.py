@@ -11,6 +11,7 @@ from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 from swda import CorpusReader
 from mappings import get_id2tag
+import config
 
 def load_pretrained_glove(path):
     pkl_path = "../helper_files/glove.840B.300d.pkl"
@@ -253,6 +254,16 @@ def load_all_transcripts(transcript_dir = "../transcripts/", chunked = True,
     if return_fnames:
         return transcripts, fnames
     return transcripts
+
+def load_all_processed_transcripts():
+    dir = config.paths["transcript_dfs"]
+    tdfs = []
+    for fname in os.listdir(dir):
+        if fname.endswith("pkl"):
+            fpath = dir + fname
+            tdf = pd.read_pickle(fpath)
+            tdfs.append(tdf)
+    return tdfs
 
 
 def check_coverage(vocab,embeddings_index):
