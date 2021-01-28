@@ -1,7 +1,7 @@
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-from utils import load_all_transcripts, load_pretrained_glove
+from utils import load_all_transcripts, load_pretrained_glove, load_pretrained_conceptnet
 from predictDA import get_all_annotated_transcripts
 from tqdm import tqdm
 import nltk
@@ -63,8 +63,10 @@ class TopicExtractor:
         self.min_topic_length = config.topics["min_topic_length"]
         self.min_overlap = 0.2
         #load glove: ~ 9s
-        print("loading glove, this takes a while")
-        self.glove = load_pretrained_glove("../embeddings/glove.840B.300d.txt")
+        #print("loading glove, this takes a while")
+        #self.glove = load_pretrained_glove("../embeddings/glove.840B.300d.txt")
+        print("loading conceptnet numberbatch embeddings")
+        self.glove = load_pretrained_conceptnet()
         self.pca = None
 
     def init_models(self):
@@ -82,18 +84,23 @@ class TopicExtractor:
         '''
         return len(wn.synsets(self.Lem.lemmatize(word), NOUN)) > 0
 
+    def in_embeddings(self, word):
+        return self.glove.get(word) is not None
+
     def add_by_ner(self, keywords, sentence):
         for entity in sentence.get_spans('ner-ontonotes-fast'):
             if entity.labels[0].value in ["CARDINAL", "ORDINAL", "TIME", "PERCENT"]:
                 continue
-            keywords.add(self.Lem.lemmatize(entity.text.lower().replace(" ", "_")))
+            #keywords.add(self.Lem.lemmatize(entity.text.lower().replace(" ", "_")))
+            keywords.add(entity.text.lower().replace(" ", "_"))
         return keywords
 
     def add_by_pos(self, keywords, sentence):
         for entity in sentence.get_spans('pos-fast'):
             pos = entity.labels[0].value
             if pos.startswith("NN"):
-                keywords.add(self.Lem.lemmatize(entity.text.lower()))
+                #keywords.add(self.Lem.lemmatize(entity.text.lower()))
+                keywords.add(entity.text.lower())
         return keywords
 
     def add_all_nouns(self, keywords, tokens):
@@ -106,9 +113,10 @@ class TopicExtractor:
     def add_bi_grams(self, keywords, tokens):
         # for two word combinations, such as "neural net", check if its in synset
         for words in zip(tokens, tokens[1:]):
-            combined = "_".join(words)
-            if self.in_word_net(combined):
-                keywords.add(self.Lem.lemmatize(combined.lower()))
+            combined = "_".join(words).lower()
+            #if self.in_word_net(combined):
+            if self.in_embeddings(combined):
+                keywords.add(combined)
         return keywords
 
     def remove_manual_filter_words(self, keywords):
@@ -350,8 +358,8 @@ class TopicExtractor:
         if self.pca is None:
             print("No pca fitted yet, run fit_n_d_embeddings()")
             return
-        embeds = [self.glove[w] for w in topic if w in self.glove.keys()]
-
+        #embeds = [self.glove[w] for w in topic if w in self.glove.keys()]
+        embeds = [self.glove.get(w) for w in topic if self.glove.get(w) is not None]
         if embeds:
             mean = np.array(embeds).mean(axis=0)
             return self.pca.transform([mean])[0][0]
