@@ -360,6 +360,9 @@ class TopicExtractor:
     def cosine_similarity(self, vec1, vec2):
         if vec1 is None or vec2 is None:
             return 0
+        vec1 = np.asarray(vec1, dtype = np.int32)
+        vec2 = np.asarray(vec2, dtype = np.int32) #8 bits overflow
+
         return np.dot(vec1, vec2)/(np.linalg.norm(vec1) * np.linalg.norm(vec2))
 
     def process_batch(self, dfs):
