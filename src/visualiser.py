@@ -9,6 +9,7 @@ import config
 from matplotlib import cm
 import matplotlib as mpl
 from tqdm import tqdm
+from collections import defaultdict
 
 
 class Visualiser():
@@ -33,7 +34,7 @@ class Visualiser():
 
         self.node_radius = 0.3
 
-        self.fig = plt.figure(0, figsize=(150, 2))
+        self.fig = plt.figure(0, figsize=(max_nodes//10, 2))
         self.ax = self.fig.add_subplot(111, aspect='equal')
 
         self.nr_objects = np.zeros(max_nodes)
@@ -83,9 +84,7 @@ class Visualiser():
         self.nr_objects[int(x0): int(xf)] += 1
 
         for i, lfy in enumerate(self.lowest_free_y[int(x0): int(xf)], int(x0)):
-            # if lfy == y0/self.delta_y:
-            if lfy == y0:
-                self.lowest_free_y[i] += self.delta_y
+            self.lowest_free_y[i] = y0 + self.delta_y
 
         con = ConnectionPatch(n0.center, nf.center, "data", "data", zorder=0)
         con.set_linewidth(4)
@@ -95,57 +94,54 @@ class Visualiser():
 
 
 def get_topic_ranges(tdf):
-
-    trs = {}
+    trs = defaultdict(list)
 
     for i, topics in tdf["topics"].iteritems():
         for topic in topics:
             existing_range = trs.get(frozenset(topic))
-            if (existing_range is not None and i >= existing_range[0]
-                    and i <= existing_range[1]):
+            if (existing_range is not None and i >= existing_range[-1][0]
+                    and i <= existing_range[-1][1]):
                 continue
             for j, next_topics in tdf.loc[i + 1:, "topics"].iteritems():
                 if topic in next_topics:
                     continue
-                trs[frozenset(topic)] = (i, j - 1)
+                trs[frozenset(topic)].append((i, j - 1))
                 break
     return trs
 
+
 def get_colormap(embeddings_1d):
     norm = mpl.colors.Normalize(embeddings_1d.min(), embeddings_1d.max())
-    cmap = cm.tab20c
+    cmap = cm.Dark2
     return cm.ScalarMappable(norm=norm, cmap=cmap)
 
-# %%
-te = TopicExtractor()
-# %%
-transcript_name = "joe_rogan_elon_musk"
-# transcript_name = "sam_harris_nicholas_christakis"
-tdf = pd.read_pickle("../processed_transcripts/" + transcript_name + ".pkl")
 
-for tdf in tqdm(load_all_processed_transcripts()):
+if __name__ == "__main__":
+    te = TopicExtractor()
 
-    pd.options.display.max_rows = None
-    embeds1d = np.array(te.fit_n_d_embeddings(tdf, 1))
-    scalar_to_color = get_colormap(embeds1d)
-    #tdf, topic_ranges = te.add_topics(tdf, return_topic_ranges=True)
-    topic_ranges = get_topic_ranges(tdf)
-    vis = Visualiser(len(tdf))
-    min_topic_length = 1
-    # sort topics by tr, so that bigger ones placed at the bottom
-    tr_items = sorted(list(topic_ranges.items()),
-                      key=lambda x: x[1][1] - x[1][0],
-                      reverse=True)
+    tdfs, tnames = load_all_processed_transcripts(return_fnames=True)
+    for tdf, transcript_name in tqdm(zip(tdfs, tnames)):
 
-    for topic, tr in tr_items:
-        if tr[1] - tr[0] < min_topic_length:
-            continue
-        joined = ", ".join(list(topic))
-        embedding_1d = te.get_n_d_embedding(topic, 1)
-        if embedding_1d is False:
-            color = 'grey'
-        color = scalar_to_color.to_rgba(embedding_1d)
-        vis.add_section(tr[0], tr[1], joined, color)
+        pd.options.display.max_rows = None
+        embeds1d = np.array(te.fit_n_d_embeddings(tdf, 1))
+        scalar_to_color = get_colormap(embeds1d)
+        topic_ranges = get_topic_ranges(tdf)
+        vis = Visualiser(len(tdf))
+        min_topic_length = 5
+        # sort topics by tr, so that bigger ones placed at the bottom
 
-    vis.save_fig(transcript_name)
-    vis.show_fig()
+        tr_items = [(topic, tr) for topic, trs in topic_ranges.items()
+                    for tr in trs]
+
+        for topic, tr in tr_items:
+            if tr[1] - tr[0] < min_topic_length:
+                continue
+            joined = ", ".join(list(topic))
+            embedding_1d = te.get_n_d_embedding(topic, 1)
+            if embedding_1d is False:
+                color = 'lightgrey'
+            color = scalar_to_color.to_rgba(embedding_1d)
+            vis.add_section(tr[0], tr[1], joined, color)
+
+        vis.save_fig(transcript_name)
+        vis.show_fig()
