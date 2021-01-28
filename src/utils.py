@@ -35,6 +35,27 @@ def load_pretrained_glove(path):
         print("Completed loading GloVe model.")
     return glove
 
+class ConceptNetDict():
+    def __init__(self):
+        path = config.paths["embeddings"] + "en_mini_conceptnet.h5"
+        self.df = pd.read_hdf(path, 'data')
+        df = pd.read_hdf(path, 'data')
+
+    def __getitem__(self, idx):
+        return self.df.loc[idx].values
+
+    def __contains__(self, idx):
+        return self.get(idx) is not None
+
+    def get(self, key):
+        try:
+            return self.__getitem__(key)
+        except KeyError:
+            return
+
+def load_pretrained_conceptnet():
+    return ConceptNetDict()
+
 def get_embedding_matrix(path, word2id, force_rebuild = False):
     fpath = "../helper_files/embedding_matrix.pkl"
     if not force_rebuild and os.path.exists(fpath):
@@ -255,14 +276,18 @@ def load_all_transcripts(transcript_dir = "../transcripts/", chunked = True,
         return transcripts, fnames
     return transcripts
 
-def load_all_processed_transcripts():
+def load_all_processed_transcripts(return_fnames = False):
     dir = config.paths["transcript_dfs"]
     tdfs = []
+    fnames = []
     for fname in os.listdir(dir):
         if fname.endswith("pkl"):
             fpath = dir + fname
             tdf = pd.read_pickle(fpath)
             tdfs.append(tdf)
+            fnames.append(fname.split(".")[0])
+    if return_fnames:
+        return tdfs, fnames
     return tdfs
 
 
