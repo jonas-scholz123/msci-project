@@ -23,6 +23,7 @@ paths = dict(
     transcripts = '../transcripts/',
     transcript_dfs = '../processed_transcripts/',
     figures = '../figures/',
+    embeddings = "../embeddings/"
 )
 
 topics = dict(
