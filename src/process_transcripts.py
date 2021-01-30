@@ -45,9 +45,12 @@ def enhance_transcript_df(df):
     return df
 
 
-def process_all_transcripts(force_rebuild=False):
+def process_all_transcripts(force_rebuild=False, max_nr=30):
+    # TODO: make a central meta file that checks what stage every transcript
+    # is in
     te = TopicExtractor()
-    transcripts, fnames = load_all_transcripts(return_fnames=True)
+    transcripts, fnames = load_all_transcripts(return_fnames=True,
+                                               max_nr=max_nr)
 
     for transcript, fname in tqdm(zip(transcripts, fnames)):
         if (os.path.exists("../processed_transcripts/" + fname + ".csv")
@@ -66,25 +69,4 @@ def process_all_transcripts(force_rebuild=False):
 
 
 if __name__ == "__main__":
-    process_all_transcripts(force_rebuild=True)
-    # import pandas as pd
-    # tdf = pd.read_pickle("../processed_transcripts/sam_harris_nicholas_christakis.pkl")
-
-    # pd.options.display.width = 0
-    # pd.options.display.max_rows = None
-
-    # tdf
-    # import numpy as np
-    # all_topics = set()
-    # for topics in tdf["topics"]:
-    #     if type(topics) != list:
-    #         continue
-    #     for t in topics:
-    #         all_topics.add(t)
-    # import numpy as np
-    # df = pd.DataFrame([0, 1, 10, 9, 8])
-    # df["topics"] = np.empty((len(df), 0)).tolist() #set topics to empty list
-#
-    # df["topics"] = [list() for _ in range(len(df))]
-#
-    # df.loc[:, "topics"] = df.loc[:, "topics"].apply(lambda x: x + ["lol"])
+    process_all_transcripts(force_rebuild=False, max_nr=30)
