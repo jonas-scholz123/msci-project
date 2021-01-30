@@ -1,4 +1,5 @@
 import json
+import os
 from datetime import timedelta
 import config
 
@@ -10,11 +11,6 @@ def json_to_transcript(in_path, out_path):
         return True
     else:
         return False
-
-path = "../transcripts/spotify_transcripts/podcasts-transcripts-6to7/spotify-podcasts-2020/podcasts-transcripts/6/0/show_60aEckwTYs8xCEpsAasV0o/3NHTGeZoLLIfoHnlwtOu6w.json"
-
-#multi speakers:
-#path = "../transcripts/spotify_transcripts/podcasts-transcripts-6to7/spotify-podcasts-2020/podcasts-transcripts/6/M/show_6me2wZOYKSbBIl3x5VVIP7/2q8NzBl4l18H4Hrxh47bx2.json"
 
 
 def extract_json_transcript(path):
@@ -53,6 +49,7 @@ def extract_json_transcript(path):
         return
     return utterances, speakers_and_times
 
+
 def write_transcript(path, utterances, speakers_and_times):
     whitespaces = ["\n"] * len(utterances)
     lines = list(zip(speakers_and_times, utterances, whitespaces))
@@ -62,7 +59,49 @@ def write_transcript(path, utterances, speakers_and_times):
         f.writelines(lines)
     return
 
-utterances, speakers_and_times = extract_json_transcript(path)
 
-write_transcript("../transcripts/person1_person2.txt",
-    utterances, speakers_and_times)
+def extract_spotify(max_nr=None):
+
+    json_paths = []
+
+    def extract_jsons(root):
+        for path in os.listdir(root):
+            full_path = root + path
+            if os.path.isdir(full_path):
+                extract_jsons(full_path + "/")
+            else:
+                json_paths.append(full_path)
+
+    root = config.paths["spotify_root"]
+    extract_jsons(root)
+
+    counter = 0
+    for jp in json_paths:
+        hash = jp.split("/")[-1].split(".")[0]
+        new_fn = "spotify_" + hash
+        new_fp = config.paths["transcripts"] + new_fn + ".txt"
+
+        if os.path.exists(new_fp):
+            continue
+
+        utterances, speakers_and_times = extract_json_transcript(jp)
+
+        if len(utterances) <= config.data["max_nr_utterances"]:
+            #too short is bad
+            continue
+
+        write_transcript(new_fp, utterances, speakers_and_times)
+        counter += 1
+
+        if max_nr is not None and counter >= max_nr:
+            break
+
+def remove_all_spotify():
+    dir = config.paths["transcripts"]
+
+    for fp in os.listdir(dir):
+        if fp.startswith("spotify"):
+            os.remove(dir + fp)
+
+
+extract_spotify(max_nr=50)
