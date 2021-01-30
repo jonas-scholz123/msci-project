@@ -261,16 +261,25 @@ def load_mrda_data(detail_level = 0):
     return utterances_list, labels_list
 
 def load_all_transcripts(transcript_dir = "../transcripts/", chunked = True,
-    chunk_size = 100, return_fnames=False):
+    chunk_size = 100, return_fnames=False, max_nr=None):
 
     transcripts = []
     fnames = []
 
+    counter = 0
+
     for fpath in os.listdir(transcript_dir):
-        entries = load_one_transcript(transcript_dir + fpath,
-            chunked = chunked, chunk_size=chunk_size)
+        if fpath.startswith("spotify"):
+            entries = load_spotify_transcript(
+                transcript_dir + fpath, chunked=chunked, chunk_size=chunk_size)
+        else:
+            entries = load_one_transcript(
+                transcript_dir + fpath, chunked=chunked, chunk_size=chunk_size)
+        counter += 1
         transcripts.append(entries)
         fnames.append(fpath.split(".")[-2])
+        if max_nr is not None and counter >= max_nr:
+            break
 
     if return_fnames:
         return transcripts, fnames
@@ -477,6 +486,22 @@ def load_one_transcript(fpath, chunked = True, chunk_size = 100):
 
     return entries
 
+def load_spotify_transcript(fpath, chunked=True, chunk_size=100):
+    with open(fpath, 'r') as f:
+        lines = f.readlines()
+
+    times_and_speakers = lines[0::3]
+    utterances = lines[1::3]
+
+    speakers = [tns.split(":")[0] for tns in times_and_speakers]
+    times = [_find_timestamp(tns) for tns in times_and_speakers]
+    utterances = [u.replace("\n", "") for u in utterances]
+    utterances = [" ".join(nltk.word_tokenize(u)) for u in utterances]
+
+    entries = list(zip(utterances, speakers, times))
+    if chunked:
+        entries = split_into_chunks(entries, chunk_size)
+    return entries
+
 if __name__ == '__main__':
-    transcripts = load_all_transcripts("../transcripts/", chunked = True)
-    transcripts[0][0]
+    transcripts = load_all_transcripts("../transcripts/", chunked = True, max_nr=50)
