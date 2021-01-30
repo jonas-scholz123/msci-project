@@ -133,6 +133,9 @@ if __name__ == "__main__":
         tr_items = [(topic, tr) for topic, trs in topic_ranges.items()
                     for tr in trs]
 
+        tr_items = sorted(tr_items, key=lambda x: x[1][1] - x[1][0],
+                          reverse=True)
+
         for topic, tr in tr_items:
             if tr[1] - tr[0] < min_topic_length:
                 continue
