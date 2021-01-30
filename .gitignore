@@ -9,4 +9,5 @@ swda/
 Probabilistic-RNN-DA-Classifier/
 embeddings/
 helper_files/glove.840B.300d.pkl
-transcripts/spotify/
+transcripts/spotify*
+spotify_transcripts/
