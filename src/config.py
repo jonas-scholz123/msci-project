@@ -22,6 +22,7 @@ corpus = dict(
 paths = dict(
     transcripts = '../transcripts/',
     transcript_dfs = '../processed_transcripts/',
+    spotify_root = '../spotify_transcripts/',
     figures = '../figures/',
     embeddings = "../embeddings/"
 )
@@ -51,7 +52,7 @@ topics = dict(
                                "nothing", "nobody", "noone", "responsibility",
                                "well", "thing", "case", "moment", "people",
                                "guess", "side", "problem", "question", "implication",
-                               "lack", "use", "place", "dope", "world", "topic"])
+                               "lack", "use", "place", "dope", "world", "topic", "take"])
                                , #"people" might be better in than out
 
     filler_das = set(['Appreciation', 'Agree/Accept', 'Acknowledge (Backchannel)',
