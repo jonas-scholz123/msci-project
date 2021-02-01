@@ -23,8 +23,9 @@ paths = dict(
     transcripts = '../transcripts/',
     transcript_dfs = '../processed_transcripts/',
     spotify_root = '../spotify_transcripts/',
+    spotify_meta = '../spotify_transcripts/metadata.tsv',
     figures = '../figures/',
-    embeddings = "../embeddings/"
+    embeddings = "../embeddings/",
 )
 
 topics = dict(
