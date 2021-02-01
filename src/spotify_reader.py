@@ -5,7 +5,6 @@ import config
 import pandas as pd
 import re
 
-# TODO: use metadata to get real titles?
 
 def json_to_transcript(in_path, out_path):
     transcript_data = extract_json_transcript(in_path)
@@ -40,8 +39,8 @@ def extract_json_transcript(path):
                 words.append(word)
                 if "." in word or "?" in word or "!" in word:
                     utterances.append(" ".join(words) + "\n")
-                    # 35.00s -> cut off s i.e. [:-1], turn into float, then turn
-                    # into desired format (hh:mm:ss)
+                    # 35.00s -> cut off s i.e. [:-1], turn into float, then
+                    # turn into desired format (hh:mm:ss)
                     seconds = int(float(time[:-1]))
                     timestring = '(0' + str(timedelta(seconds=seconds)) + ')'
                     speaker_timestring = ("Speaker " + str(speaker_tag) + ": "
@@ -57,11 +56,12 @@ def extract_json_transcript(path):
 def write_transcript(path, utterances, speakers_and_times):
     whitespaces = ["\n"] * len(utterances)
     lines = list(zip(speakers_and_times, utterances, whitespaces))
-    lines = [list(l) for l in lines]
+    lines = [list(line) for line in lines]
     lines = sum(lines, [])
     with open(path, "w") as f:
         f.writelines(lines)
     return
+
 
 def make_title(meta, hash):
     entry = meta[meta['episode_filename_prefix'] == hash]
@@ -74,6 +74,7 @@ def make_title(meta, hash):
     idx = entry.index[0]
     title = "_".join(["spotify", show_name, ep_name, str(idx)])
     return re.sub(r'\W+', '', title)    # filter non alphanumerical chars
+
 
 def extract_spotify(max_nr=None):
 
@@ -113,6 +114,7 @@ def extract_spotify(max_nr=None):
         if max_nr is not None and counter >= max_nr:
             break
 
+
 def remove_all_spotify():
     dir = config.paths["transcripts"]
 
@@ -121,5 +123,6 @@ def remove_all_spotify():
             os.remove(dir + fp)
 
 
-extract_spotify(max_nr=50)
-#remove_all_spotify()
+if __name__ == "__main__":
+    extract_spotify(max_nr=50)
+    # remove_all_spotify()
