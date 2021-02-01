@@ -49,10 +49,13 @@ def process_all_transcripts(force_rebuild=False, max_nr=30):
     # TODO: make a central meta file that checks what stage every transcript
     # is in
     te = TopicExtractor()
-    transcripts, fnames = load_all_transcripts(return_fnames=True,
-                                               max_nr=max_nr)
 
-    for transcript, fname in tqdm(zip(transcripts, fnames)):
+    root = config.paths["transcripts"]
+    fnames = os.listdir(root)
+
+    for fname in tqdm(fnames):
+        fname = fname.split(".")[0]
+        transcript = load_one_transcript(root + fname + ".txt")
         if (os.path.exists("../processed_transcripts/" + fname + ".csv")
                 and not force_rebuild):
             continue
