@@ -4,17 +4,23 @@ import os
 import numpy as np
 
 import config
-from utils import load_one_transcript, load_all_transcripts
+from utils import load_one_transcript
 from predictDA import make_annotated_transcript
 from topics import TopicExtractor
+
 
 def timestamp_to_datetime(timestamp):
     return datetime.strptime(timestamp, "%H:%M:%S")
 
+
 def get_fractional_time(current_timestamp, biggest_time):
     try:
-        current_seconds = (biggest_time - timestamp_to_datetime(current_timestamp)).total_seconds()
-        total_seconds = (biggest_time - timestamp_to_datetime("00:00:00")).total_seconds()
+        current_seconds = (biggest_time
+                           - timestamp_to_datetime(current_timestamp)
+                           ).total_seconds()
+
+        total_seconds = (biggest_time
+                         - timestamp_to_datetime("00:00:00")).total_seconds()
         return 1 - current_seconds/total_seconds
     except:
         return current_timestamp
