@@ -7,12 +7,13 @@ from keras.layers import (
     TimeDistributed,
     Dropout,
     Bidirectional,
-    Conv1D,
-    MaxPooling1D,
-    Flatten,
-    AveragePooling1D,
+    # Conv1D,
+    # MaxPooling1D,
+    # Flatten,
+    # AveragePooling1D,
 )
-from keras.optimizers import Adam, schedules
+
+# from keras.optimizers import Adam, schedules
 from tf2crf import CRF
 
 import config
@@ -24,9 +25,9 @@ def get_bilstm_crf_model(embedding_matrix, n_tags, verbose=False):
     max_nr_words = config.data["max_nr_words"]
     dropout_rate = config.model["dropout_rate"]
     nr_lstm_cells = config.model["nr_lstm_cells"]
-    init_lr = config.model["init_lr"]
-    decay_steps = config.model["decay_steps"]
-    decay_rate = config.model["decay_rate"]
+    # init_lr = config.model["init_lr"]
+    # decay_steps = config.model["decay_steps"]
+    # decay_rate = config.model["decay_rate"]
 
     embedding_layer = Embedding(
         embedding_matrix.shape[0],
@@ -62,11 +63,11 @@ def get_bilstm_crf_model(embedding_matrix, n_tags, verbose=False):
 
     if verbose:
         model.summary()
-    lr_schedule = schedules.ExponentialDecay(
-        init_lr, decay_steps=decay_rate, decay_rate=decay_rate
-    )
+    # lr_schedule = schedules.ExponentialDecay(
+    #     init_lr, decay_steps=decay_rate, decay_rate=decay_rate
+    # )
 
-    optimizer = Adam(learning_rate=lr_schedule)  # TODO: check if used?
+    # optimizer = Adam(learning_rate=lr_schedule)  # TODO: check if used?
     model.compile("adam", loss=crf.loss, metrics=[crf.accuracy])
     print("Done!")
     return model

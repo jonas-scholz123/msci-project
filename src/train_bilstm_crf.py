@@ -10,8 +10,6 @@ from utils import (
     load_corpus_data,
 )
 import tensorflow as tf
-from keras.preprocessing.text import Tokenizer
-import numpy as np
 import os
 
 os.environ["TF_FORCE_GPU_ALLOW_GROWTH"] = "true"

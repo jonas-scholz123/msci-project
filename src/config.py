@@ -33,7 +33,8 @@ paths = dict(
 processing = dict(nr_processes=2)
 
 topics = dict(
-    # singular person words that were wrongly classified as topic words, are filtered out manually
+    # singular person words that were wrongly classified as topic words, are
+    # filtered out manually
     # Note some words, like "time" are unlikely to be the topic of conversation
     # and more used in sentences such as "last time you did X" or "I remember"
     # a time when..."
@@ -150,7 +151,9 @@ topics = dict(
             "Thanking",
         ]
     ),
-    max_gap=10,  # max number of sentences between two topic_word matches for it to no longer be one topic
+    # max number of sentences between two topic_word matches
+    # for it to no longer be one topic
+    max_gap=10,
     min_sim=0.6,
     min_topic_length=1,
 )

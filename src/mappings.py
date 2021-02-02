@@ -120,8 +120,6 @@ def get_id2tag(corpus, detail_level=0):
             40: "ft",
         }
 
-    return id2tag
-
 
 def get_tag2full_label(corpus, detail_level):
 

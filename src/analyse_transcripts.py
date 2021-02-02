@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
-from tqdm import tqdm
+
+# from tqdm import tqdm
 
 import config
 from mappings import get_id2tag, get_tag2full_label
@@ -58,10 +59,7 @@ if __name__ == "__main__":
 
     n_tags = len(id2tag)
 
-    transcripts = load_all_transcripts()
-    tdfs = [make_annotated_transcript(t) for t in tqdm(transcripts)]
-    for tdf in tdfs:
-        enhance_tdf(tdf)
+    # TODO: import processed transcripts
     # merged_tdfs = pd.concat(tdfs)
 
     tdfs = add_topics_to_dfs(tdfs)

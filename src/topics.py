@@ -1,14 +1,9 @@
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-from utils import (
-    load_all_transcripts,
-    load_pretrained_glove,
-    load_pretrained_conceptnet,
-)
+from utils import load_pretrained_conceptnet
 from tqdm import tqdm
 import nltk
-from pprint import pprint
 from nltk.corpus import wordnet as wn
 from nltk.corpus import stopwords
 from nltk.corpus.reader import NOUN
@@ -65,7 +60,8 @@ class TopicExtractor:
         self.min_overlap = 0.2
         # load glove: ~ 9s
         # print("loading glove, this takes a while")
-        # self.glove = load_pretrained_glove("../embeddings/glove.840B.300d.txt")
+        # self.glove = load_pretrained_glove(
+        #    "../embeddings/glove.840B.300d.txt")
         print("loading conceptnet numberbatch embeddings")
         self.glove = load_pretrained_conceptnet()
         self.pca = None
@@ -90,9 +86,9 @@ class TopicExtractor:
 
     def add_by_ner(self, keywords, sentence):
         for entity in sentence.get_spans("ner-ontonotes-fast"):
-            if entity.labels[0].value in ["CARDINAL", "ORDINAL", "TIME", "PERCENT"]:
+            irrelevant_ners = ["CARDINAL", "ORDINAL", "TIME", "PERCENT"]
+            if entity.labels[0].value in irrelevant_ners:
                 continue
-            # keywords.add(self.Lem.lemmatize(entity.text.lower().replace(" ", "_")))
             keywords.add(entity.text.lower().replace(" ", "_"))
         return keywords
 
@@ -215,7 +211,6 @@ class TopicExtractor:
             # topic is all matching keywords with original word
             matches = self.get_matches(set([orig_word]), next_kws)
             if matches:
-                printable = False
                 topic_set = topic_set.union(matches)
                 return self.get_end_of_topic(key_words, topic_set, orig_word, j)
         # only reaches this point at end of convo
@@ -298,7 +293,6 @@ class TopicExtractor:
                 net.add_node(t, tr[0], tr[1])
 
         for i, n1 in enumerate(net.nodes):
-            topic = n1.topic
             for n2 in net.nodes[i + 1 :]:
                 if n1.end < n2.start:
                     break

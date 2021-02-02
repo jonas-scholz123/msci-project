@@ -5,7 +5,6 @@ from utils import (
     get_embedding_matrix,
     get_tokenizer,
     make_model_readable_X,
-    load_all_transcripts,
     merge_offset_arrays,
     load_one_transcript,
 )

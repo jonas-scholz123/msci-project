@@ -223,16 +223,23 @@ class Utterance:
     values of the class variable header:
 
     'swda_filename':       (str) The filename: directory/basename
-    'ptb_basename':        (str) The Treebank filename: add ".pos" for POS and ".mrg" for trees
+    'ptb_basename':        (str) The Treebank filename: add ".pos" for POS and
+                           ".mrg" for trees
     'conversation_no':     (int) The conversation Id, to key into the metadata database.
-    'transcript_index':    (int) The line number of this item in the transcript (counting only utt lines).
-    'act_tag':             (list of str) The Dialog Act Tags (separated by ||| in the file).
+    'transcript_index':    (int) The line number of this item in the transcript
+                           (counting only utt lines).
+    'act_tag':             (list of str) The Dialog Act Tags (separated by |||
+                           in the file).
     'caller':              (str) A, B, @A, @B, @@A, @@B
-    'utterance_index':     (int) The encoded index of the utterance (the number in A.49, B.27, etc.)
-    'subutterance_index':  (int) Utterances can be broken across line. This gives the internal position.
+    'utterance_index':     (int) The encoded index of the utterance (the number
+                           in A.49, B.27, etc.)
+    'subutterance_index':  (int) Utterances can be broken across line.
+                           This gives the internal position.
     'text':                (str) The text of the utterance
-    'pos':                 (str) The POS tagged version of the utterance, from PtbBasename+.pos
-    'trees':               (list of nltk.tree.Tree) The tree(s) containing this utterance (separated by ||| in the file).
+    'pos':                 (str) The POS tagged version of the utterance,
+                           from PtbBasename+.pos
+    'trees':               (list of nltk.tree.Tree) The tree(s) containing this
+                           utterance (separated by ||| in the file).
     'ptb_treenumbers':     (list of int) The tree numbers in the PtbBasename+.mrg
     """
 

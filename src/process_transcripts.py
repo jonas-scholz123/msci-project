@@ -2,13 +2,11 @@ from datetime import datetime
 from tqdm import tqdm
 import os
 import numpy as np
-import resource
 import config
 from utils import load_one_transcript
 from predictDA import DA_classifier
 from topics import TopicExtractor
 import multiprocessing as mp
-import time
 
 
 def timestamp_to_datetime(timestamp):
@@ -116,35 +114,8 @@ def process_all_transcripts(force_rebuild=False, max_nr=30):
         process_init()
         for fname in tqdm(fnames):
             process(fname)
-
-        # process_one_transcript(fname)
-        # counter += 1
-        # if max_nr is not None and counter >= max_nr:
-        # break
     return
 
 
 if __name__ == "__main__":
-
-    # force_rebuild = False
-    #
-    # te = TopicExtractor()
-    # dac = DA_classifier()
-    #
-    # root = config.paths["transcripts"]
-    # fnames = os.listdir(root)
-    #
-    ## counter = 0
-    # already_processed = set(os.listdir(config.paths["tdfs"]))
-    #
-    # if not force_rebuild:
-    #    fnames = [fname for fname in fnames
-    #              if fname + '.pkl' not in already_processed]
-    #
-    # with mp.Pool(1, process_init, [te, dac], maxtasksperchild=1) as pool:
-    #    pool.map(process, fnames)
-
-    # soft, _ = resource.getrlimit(resource.RLIMIT_AS)
-    # limit to 14GB of memory
-    # resource.setrlimit(resource.RLIMIT_AS, (soft, 14))
     process_all_transcripts(force_rebuild=False, max_nr=None)

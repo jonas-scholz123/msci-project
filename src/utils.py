@@ -1,6 +1,7 @@
 import numpy as np
 import pickle
 import os
+import matplotlib.pyplot as plt
 import nltk
 import operator
 import re
@@ -41,7 +42,6 @@ class ConceptNetDict:
     def __init__(self):
         path = config.paths["embeddings"] + "en_mini_conceptnet.h5"
         self.df = pd.read_hdf(path, "data")
-        df = pd.read_hdf(path, "data")
 
     def __getitem__(self, idx):
         return self.df.loc[idx].values
@@ -87,7 +87,8 @@ def pad_nested_sequences(sequences, max_nr_sentences, max_nr_words):
         for j, utterance in enumerate(sequence):
             if j < max_nr_words:
                 if len(utterance) > max_nr_words:
-                    # print("WARNING: utterance too long, will be truncated, increase max_nr_words!")
+                    # print("WARNING: utterance too long, will be truncated,
+                    # increase max_nr_words!")
                     utterance = utterance[:max_nr_words]
                 X[i, j, : len(utterance)] = utterance
     return X
@@ -144,8 +145,8 @@ def get_tokenizer(rebuild_from_all_texts=False):
     return tokenizer
 
 
-def convert_tag_to_id(l, tag2id):
-    return [tag2id[tag] for tag in l]
+def convert_tag_to_id(iterable, tag2id):
+    return [tag2id[tag] for tag in iterable]
 
 
 def make_model_readable_data(
@@ -183,7 +184,7 @@ def get_all_texts():
 
 
 def turn_tags_to_id(labels, tag2id):
-    return [[tag2id[l] for l in utterance_labels] for utterance_labels in labels]
+    return [[tag2id[lab] for lab in utterance_labels] for utterance_labels in labels]
 
 
 def load_corpus_data(corpus, detail_level=0):
@@ -244,7 +245,6 @@ def process_transcript_txt(transcript, excluded_tags=None):
         utterance_sentence = " ".join(utterance)
 
         # Print original and processed utterances
-        # print(utt.transcript_index, " ", utt.text_words(filter_disfluency=True), " ", utt.damsl_act_tag())
         # print(utt.transcript_index, " ", utterance_sentence, " ", utt.damsl_act_tag())
 
         # Check we are not adding an empty utterance (i.e. because it was just
@@ -273,10 +273,10 @@ def load_mrda_data(detail_level=0):
             with open(fpath, "r") as f:
                 lines = f.readlines()
 
-            split_lines = [l.split("|") for l in lines]
-            utterances = [l[1] for l in split_lines]
+            split_lines = [line.split("|") for line in lines]
+            utterances = [line[1] for line in split_lines]
 
-            tags = [l[detail_level + 2].replace("\n", "") for l in split_lines]
+            tags = [line[detail_level + 2].replace("\n", "") for line in split_lines]
             id2tag = get_id2tag("mrda", detail_level)
             tag2id = {t: id for id, t in id2tag.items()}
             ids = [tag2id[tag] for tag in tags]
@@ -425,53 +425,6 @@ def plot_history(history, title="History"):
     return fig
 
 
-def plot_confusion_matrix(
-    matrix,
-    classes,
-    title="",
-    matrix_size=10,
-    normalize=False,
-    color="black",
-    cmap="viridis",
-):
-
-    # Number of elements of matrix to show
-    if matrix_size:
-        matrix = matrix[:matrix_size, :matrix_size]
-        classes = classes[:matrix_size]
-
-    # Normalize input matrix values
-    if normalize:
-        matrix = matrix.astype("float") / matrix.sum(axis=1)[:, np.newaxis]
-        value_format = ".2f"
-    else:
-        value_format = "d"
-
-    # Create figure with two axis and a colour bar
-    fig, ax = plt.subplots(ncols=1, figsize=(5, 5))
-
-    # Generate axis and image
-    ax, im = plot_matrix_axis(
-        matrix, ax, classes, title, value_format, color=color, cmap=cmap
-    )
-
-    # Add colour bar
-    divider = make_axes_locatable(ax)
-    colorbar_ax = divider.append_axes("right", size="5%", pad=0.05)
-    color_bar = fig.colorbar(im, cax=colorbar_ax)
-    # Tick color
-    color_bar.ax.yaxis.set_tick_params(color=color)
-    # Tick labels
-    plt.setp(plt.getp(color_bar.ax.axes, "yticklabels"), color=color)
-    # Edge color
-    color_bar.outline.set_edgecolor(color)
-
-    # Set layout
-    fig.tight_layout()
-
-    return fig
-
-
 def _find_timestamp(s):
     timestamps = re.findall(r"\d{2}:\d{2}:\d{2}|\d{2}:\d{2}", s)
     if timestamps:
@@ -505,9 +458,6 @@ def load_one_transcript(fpath, chunked=True, chunk_size=100):
     transcript = transcript.split("\n")
 
     all_speakers = get_speakers()
-    speakers = []
-    timestamps = []
-    conversation = []
 
     current_timestamp = ""
     current_speaker = ""
@@ -555,12 +505,3 @@ def load_spotify_transcript(fpath, chunked=True, chunk_size=100):
     if chunked:
         entries = split_into_chunks(entries, chunk_size)
     return entries
-
-
-if __name__ == "__main__":
-    transcripts = load_all_transcripts("../transcripts/", chunked=True, max_nr=50)
-
-    import os
-    import autopep8
-
-    os.path.abspath(autopep8.__file__)
