@@ -84,6 +84,7 @@ def process_all_transcripts(force_rebuild=False, max_nr=30):
 
     root = config.paths["transcripts"]
     fnames = os.listdir(root)
+    total_number = len(fnames)
 
     # counter = 0
     mp.set_start_method("spawn")  # allows CUDA multiprocessing
@@ -91,7 +92,8 @@ def process_all_transcripts(force_rebuild=False, max_nr=30):
     print("total nr transcripts: ", len(fnames))
     already_processed = set(os.listdir(config.paths["tdfs"]))
     # pkl and csv files
-    print("already processed: ", len(already_processed) // 2)
+    nr_already = len(already_processed) // 2
+    print("already processed: ", nr_already)
 
     if not force_rebuild:
         fnames = [
@@ -106,7 +108,7 @@ def process_all_transcripts(force_rebuild=False, max_nr=30):
     nr_processes = config.processing["nr_processes"]
 
     if nr_processes > 1:
-        with tqdm(total=n_remaining) as pbar:
+        with tqdm(total=total_number, initial=nr_already) as pbar:
             pool = mp.Pool(nr_processes, process_init)
             for i, _ in enumerate(pool.imap(process, fnames)):
                 pbar.update()
