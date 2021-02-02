@@ -1,8 +1,11 @@
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-from utils import load_all_transcripts, load_pretrained_glove, load_pretrained_conceptnet
-from predictDA import get_all_annotated_transcripts
+from utils import (
+    load_all_transcripts,
+    load_pretrained_glove,
+    load_pretrained_conceptnet,
+)
 from tqdm import tqdm
 import nltk
 from pprint import pprint
@@ -22,8 +25,7 @@ from flair.models import MultiTagger
 import config
 
 
-class TopicNode():
-
+class TopicNode:
     def __init__(self, topic, start, end):
         self.topic = topic
         self.start = start
@@ -32,7 +34,7 @@ class TopicNode():
         self.visited = False
 
 
-class TopicNetwork():
+class TopicNetwork:
     def __init__(self):
         self.nodes = []
         self.edges = set()
@@ -44,62 +46,61 @@ class TopicNetwork():
 
     def connect_nodes(self, n1, n2):
         self.edges.add((n1, n2))
-        n1.neighbours.add(n2) #directed
+        n1.neighbours.add(n2)  # directed
 
 
 class TopicExtractor:
-
     def __init__(self):
         self.models_loaded = False
         # init lematizer
         self.Lem = WordNetLemmatizer()
-        self.stop_words = set(stopwords.words('english'))
+        self.stop_words = set(stopwords.words("english"))
         self.filler_das = config.topics["filler_das"]
         self.manual_filter_words = config.topics["manual_filter_words"]
 
-        #things needed for topic segmentation
+        # things needed for topic segmentation
         self.max_gap = config.topics["max_gap"]
         self.min_sim = config.topics["min_sim"]
         self.min_topic_length = config.topics["min_topic_length"]
         self.min_overlap = 0.2
-        #load glove: ~ 9s
-        #print("loading glove, this takes a while")
-        #self.glove = load_pretrained_glove("../embeddings/glove.840B.300d.txt")
+        # load glove: ~ 9s
+        # print("loading glove, this takes a while")
+        # self.glove = load_pretrained_glove("../embeddings/glove.840B.300d.txt")
         print("loading conceptnet numberbatch embeddings")
         self.glove = load_pretrained_conceptnet()
         self.pca = None
 
     def init_models(self):
         print("Initialising topic models, this takes a while.")
-        self.tagger = MultiTagger.load(['pos-fast', 'ner-ontonotes-fast'])
+        self.tagger = MultiTagger.load(["pos-fast", "ner-ontonotes-fast"])
 
     def in_word_net(self, word):
-        '''
+        """
         checks whether the lemmatized given word is found in wordNet, not
         only exact matches are kept!
 
         PARAMS:
             str word: word to check
             WordNetLemmatizer Lem
-        '''
+        """
         return len(wn.synsets(self.Lem.lemmatize(word), NOUN)) > 0
 
     def in_embeddings(self, word):
         return self.glove.get(word) is not None
 
     def add_by_ner(self, keywords, sentence):
-        for entity in sentence.get_spans('ner-ontonotes-fast'):
+        for entity in sentence.get_spans("ner-ontonotes-fast"):
             if entity.labels[0].value in ["CARDINAL", "ORDINAL", "TIME", "PERCENT"]:
                 continue
-            #keywords.add(self.Lem.lemmatize(entity.text.lower().replace(" ", "_")))
+            # keywords.add(self.Lem.lemmatize(entity.text.lower().replace(" ", "_")))
             keywords.add(entity.text.lower().replace(" ", "_"))
         return keywords
 
     def add_by_pos(self, keywords, sentence):
-        for entity in sentence.get_spans('pos-fast'):
+        for entity in sentence.get_spans("pos-fast"):
             pos = entity.labels[0].value
             if pos.startswith("NN"):
-                #keywords.add(self.Lem.lemmatize(entity.text.lower()))
+                # keywords.add(self.Lem.lemmatize(entity.text.lower()))
                 keywords.add(entity.text.lower())
         return keywords
 
@@ -111,10 +112,11 @@ class TopicExtractor:
         return keywords
 
     def add_bi_grams(self, keywords, tokens):
-        # for two word combinations, such as "neural net", check if its in synset
+        # for two word combinations, such as "neural net", check if its in
+        # synset
         for words in zip(tokens, tokens[1:]):
             combined = "_".join(words).lower()
-            #if self.in_word_net(combined):
+            # if self.in_word_net(combined):
             if self.in_embeddings(combined):
                 keywords.add(combined)
         return keywords
@@ -124,7 +126,8 @@ class TopicExtractor:
         for w in keywords:
             if self.Lem.lemmatize(w.lower()) in self.manual_filter_words:
                 to_remove.append(w)
-        for w in to_remove: keywords.remove(w) #remove manually filtered words
+        for w in to_remove:
+            keywords.remove(w)  # remove manually filtered words
         return keywords
 
     def remove_partial_words(self, keywords):
@@ -155,7 +158,7 @@ class TopicExtractor:
     def add_key_words(self, tdf):
         # TODO: implement tf-idf when have all datasets to remove common words
         # TODO: add documentation for how to install NER/POS libraries
-        '''
+        """
         Extracts and adds (in a new column) words that represent the topic of a
         given sentence. This will later be used for segmentation.
 
@@ -166,7 +169,7 @@ class TopicExtractor:
             pd.DataFrame tdf: transcript dataframe
         RETURNS:
             pd.DataFrame tdf: annotated dataframe
-        '''
+        """
         # TODO: Analogies destroy topic, maybe can't do anything about that
 
         if not self.models_loaded:
@@ -199,14 +202,14 @@ class TopicExtractor:
         return tdf
 
     def get_end_of_topic(self, key_words, topic_set, orig_word, start_index):
-        '''
+        """
         goes through following keywords (within max_gap) and checks if matches
         are found, if so, calls itself recursively to check matching keyword.
 
         if no matches are found within the next max_gap sentences, returns the
         starting point
-        '''
-        for j, next_kws in key_words.loc[start_index + 1:].iteritems():
+        """
+        for j, next_kws in key_words.loc[start_index + 1 :].iteritems():
             if j - start_index > self.max_gap:
                 return start_index, topic_set
             # topic is all matching keywords with original word
@@ -214,31 +217,35 @@ class TopicExtractor:
             if matches:
                 printable = False
                 topic_set = topic_set.union(matches)
-                return self.get_end_of_topic(key_words, topic_set,
-                                             orig_word, j)
-        return key_words.index[-1], topic_set  # only reaches this point at end of convo
+                return self.get_end_of_topic(key_words, topic_set, orig_word, j)
+        # only reaches this point at end of convo
+        return key_words.index[-1], topic_set
 
     def add_topics(self, tdf, return_topic_ranges=False):
-        #self = te
+        # self = te
         topics = defaultdict(list)
         topic_ranges = defaultdict(list)
 
         key_words = tdf[~tdf["key_words"].isnull()]["key_words"]
         self.all_keywords = set().union(*[k for k in key_words if k])
-        self.kw_glove = {kw: self.glove[kw]
-                         for kw in self.all_keywords if kw in self.glove}
+        self.kw_glove = {
+            kw: self.glove[kw] for kw in self.all_keywords if kw in self.glove
+        }
         for i, kws in key_words.iteritems():
             for topic_word in kws:
                 # Always take maximum topic, range, don't check again if topic
                 # already marked for a range containing i
-                if (topics[topic_word]
+                if (
+                    topics[topic_word]
                     and topics[topic_word][-1][0] <= i
-                        and topics[topic_word][-1][1] >= i):
+                    and topics[topic_word][-1][1] >= i
+                ):
                     continue
 
                 topic_set = set([topic_word])
-                end, topic_set = self.get_end_of_topic(key_words,
-                                                       topic_set, topic_word, i)
+                end, topic_set = self.get_end_of_topic(
+                    key_words, topic_set, topic_word, i
+                )
                 if end - i >= self.min_topic_length:
                     topic_ranges[(i, end)].append(topic_set)
                     for tw in topic_set:
@@ -250,15 +257,15 @@ class TopicExtractor:
         for (start, end), topics in clustered_topics.items():
             for topic in topics:
                 tdf.loc[start:end, "topics"] = tdf.loc[start:end, "topics"].apply(
-                                                    lambda x: x + [topic])
+                    lambda x: x + [topic]
+                )
 
         # empty topic fields are filled w previous topics
-        tdf["topics"] = tdf["topics"].apply(lambda x: np.nan if len(x) == 0
-                                            else x)
+        tdf["topics"] = tdf["topics"].apply(lambda x: np.nan if len(x) == 0 else x)
         tdf["topics"].fillna(method="ffill", inplace=True)
-        isna = tdf['topics'].isna()
+        isna = tdf["topics"].isna()
         # replace nans with empty lists again
-        tdf.loc[isna, 'topics'] = pd.Series([[]] * isna.sum()).values
+        tdf.loc[isna, "topics"] = pd.Series([[]] * isna.sum()).values
         if return_topic_ranges:
             return tdf, clustered_topics
         return tdf
@@ -267,10 +274,13 @@ class TopicExtractor:
 
         matches = set()
         for kw1, kw2 in product(current_kws, next_kws):
-            if (kw1 == kw2
-                or self.cosine_similarity(self.kw_glove.get(kw1),
-                                          self.kw_glove.get(kw2))
-                    > self.min_sim):
+            if (
+                kw1 == kw2
+                or self.cosine_similarity(
+                    self.kw_glove.get(kw1), self.kw_glove.get(kw2)
+                )
+                > self.min_sim
+            ):
                 matches.add(kw1)
                 matches.add(kw2)
         if len(matches) == 0:
@@ -278,7 +288,7 @@ class TopicExtractor:
         return matches
 
     def get_clustered_topics(self, topic_ranges):
-        #self = te
+        # self = te
 
         tr_list = list(topic_ranges.items())
         net = TopicNetwork()
@@ -289,7 +299,7 @@ class TopicExtractor:
 
         for i, n1 in enumerate(net.nodes):
             topic = n1.topic
-            for n2 in net.nodes[i + 1:]:
+            for n2 in net.nodes[i + 1 :]:
                 if n1.end < n2.start:
                     break
                 t1 = n1.topic
@@ -334,7 +344,7 @@ class TopicExtractor:
         all_topics = set()
         for topics in tdf["topics"]:
             for t in topics:
-                if type(t) == set:
+                if isinstance(t, set):
                     all_topics.add(frozenset(t))
         return all_topics
 
@@ -358,7 +368,7 @@ class TopicExtractor:
         if self.pca is None:
             print("No pca fitted yet, run fit_n_d_embeddings()")
             return
-        #embeds = [self.glove[w] for w in topic if w in self.glove.keys()]
+        # embeds = [self.glove[w] for w in topic if w in self.glove.keys()]
         embeds = [self.glove.get(w) for w in topic if self.glove.get(w) is not None]
         if embeds:
             mean = np.array(embeds).mean(axis=0)
@@ -368,15 +378,15 @@ class TopicExtractor:
     def cosine_similarity(self, vec1, vec2):
         if vec1 is None or vec2 is None:
             return 0
-        vec1 = np.asarray(vec1, dtype = np.int32)
-        vec2 = np.asarray(vec2, dtype = np.int32) #8 bits overflow
+        vec1 = np.asarray(vec1, dtype=np.int32)
+        vec2 = np.asarray(vec2, dtype=np.int32)  # 8 bits overflow
 
-        return np.dot(vec1, vec2)/(np.linalg.norm(vec1) * np.linalg.norm(vec2))
+        return np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
 
     def process_batch(self, dfs):
-        '''
+        """
         Wrapper of topic classification for multiple DFs, to cache models etc.
-        '''
+        """
 
         if not dfs:
             return []
@@ -407,16 +417,13 @@ def plot_similarity(labels, features, rotation):
 
     sns.set(font_scale=1.2)
     g = sns.clustermap(
-        corr,
-        xticklabels=labels,
-        yticklabels=labels,
-        vmin=0,
-        vmax=1,
-        cmap="YlOrRd")
+        corr, xticklabels=labels, yticklabels=labels, vmin=0, vmax=1, cmap="YlOrRd"
+    )
     g.ax_heatmap.set_title("Clustered Semantic Textual Similarity")
     plt.savefig(config.paths["figures"] + "similarity.pdf")
 
-#%%
+
+# %%
 if __name__ == "__main__":
     te = TopicExtractor()
     tdf = pd.read_pickle("../processed_transcripts/joe_rogan_elon_musk.pkl")

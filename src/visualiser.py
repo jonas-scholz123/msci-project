@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+
 # %matplotlib inline
 from matplotlib.patches import Circle, ConnectionPatch
 from utils import load_all_processed_transcripts
@@ -12,8 +13,7 @@ from tqdm import tqdm
 from collections import defaultdict
 
 
-class Visualiser():
-
+class Visualiser:
     def __init__(self, max_nodes):
 
         # Sentence to node
@@ -34,8 +34,8 @@ class Visualiser():
 
         self.node_radius = 0.3
 
-        self.fig = plt.figure(0, figsize=(max_nodes//10, 2))
-        self.ax = self.fig.add_subplot(111, aspect='equal')
+        self.fig = plt.figure(0, figsize=(max_nodes // 10, 2))
+        self.ax = self.fig.add_subplot(111, aspect="equal")
 
         self.nr_objects = np.zeros(max_nodes)
         self.lowest_free_y = np.zeros(max_nodes)
@@ -60,9 +60,14 @@ class Visualiser():
         n1 = self.add_node(x1, y)
         self.connect_nodes(n0, n1, color=color)
 
-        fontsize = max(min(8, (x1-x0)/len(s) * 8), 4)
-        plt.annotate(s, ((x1+x0)/2, y + self.delta_y/3), color=color,
-                     fontsize=fontsize, ha="center")
+        fontsize = max(min(8, (x1 - x0) / len(s) * 8), 4)
+        plt.annotate(
+            s,
+            ((x1 + x0) / 2, y + self.delta_y / 3),
+            color=color,
+            fontsize=fontsize,
+            ha="center",
+        )
 
     def set_axes(self):
         self.ax.set_xlim(self.min_x - 5, self.max_x + 5)
@@ -81,9 +86,9 @@ class Visualiser():
         x0, y0 = n0.center
         xf, yf = nf.center
 
-        self.nr_objects[int(x0): int(xf)] += 1
+        self.nr_objects[int(x0) : int(xf)] += 1
 
-        for i, lfy in enumerate(self.lowest_free_y[int(x0): int(xf)], int(x0)):
+        for i, lfy in enumerate(self.lowest_free_y[int(x0) : int(xf)], int(x0)):
             self.lowest_free_y[i] = y0 + self.delta_y
 
         con = ConnectionPatch(n0.center, nf.center, "data", "data", zorder=0)
@@ -99,10 +104,13 @@ def get_topic_ranges(tdf):
     for i, topics in tdf["topics"].iteritems():
         for topic in topics:
             existing_range = trs.get(frozenset(topic))
-            if (existing_range is not None and i >= existing_range[-1][0]
-                    and i <= existing_range[-1][1]):
+            if (
+                existing_range is not None
+                and i >= existing_range[-1][0]
+                and i <= existing_range[-1][1]
+            ):
                 continue
-            for j, next_topics in tdf.loc[i + 1:, "topics"].iteritems():
+            for j, next_topics in tdf.loc[i + 1 :, "topics"].iteritems():
                 if topic in next_topics:
                     continue
                 trs[frozenset(topic)].append((i, j - 1))
@@ -130,11 +138,9 @@ if __name__ == "__main__":
         min_topic_length = 5
         # sort topics by tr, so that bigger ones placed at the bottom
 
-        tr_items = [(topic, tr) for topic, trs in topic_ranges.items()
-                    for tr in trs]
+        tr_items = [(topic, tr) for topic, trs in topic_ranges.items() for tr in trs]
 
-        tr_items = sorted(tr_items, key=lambda x: x[1][1] - x[1][0],
-                          reverse=True)
+        tr_items = sorted(tr_items, key=lambda x: x[1][1] - x[1][0], reverse=True)
 
         for topic, tr in tr_items:
             if tr[1] - tr[0] < min_topic_length:
@@ -142,7 +148,7 @@ if __name__ == "__main__":
             joined = ", ".join(list(topic))
             embedding_1d = te.get_n_d_embedding(topic, 1)
             if embedding_1d is False:
-                color = 'lightgrey'
+                color = "lightgrey"
             color = scalar_to_color.to_rgba(embedding_1d)
             vis.add_section(tr[0], tr[1], joined, color)
 

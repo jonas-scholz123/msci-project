@@ -4,6 +4,7 @@ from datetime import timedelta
 import config
 import pandas as pd
 import re
+from tqdm import tqdm
 
 
 def json_to_transcript(in_path, out_path):
@@ -24,7 +25,7 @@ def extract_json_transcript(path):
     utterances = []
     speakers_and_times = []
     for entry in transcript_json["results"]:
-        entry = entry['alternatives'][0]
+        entry = entry["alternatives"][0]
         if "words" not in entry.keys():
             continue
         word_entries = entry["words"]
@@ -42,9 +43,10 @@ def extract_json_transcript(path):
                     # 35.00s -> cut off s i.e. [:-1], turn into float, then
                     # turn into desired format (hh:mm:ss)
                     seconds = int(float(time[:-1]))
-                    timestring = '(0' + str(timedelta(seconds=seconds)) + ')'
-                    speaker_timestring = ("Speaker " + str(speaker_tag) + ": "
-                                          + timestring + "\n")
+                    timestring = "(0" + str(timedelta(seconds=seconds)) + ")"
+                    speaker_timestring = (
+                        "Speaker " + str(speaker_tag) + ": " + timestring + "\n"
+                    )
                     speakers_and_times.append(speaker_timestring)
                     time = we["startTime"]
                     words = []
@@ -64,23 +66,23 @@ def write_transcript(path, utterances, speakers_and_times):
 
 
 def make_title(meta, hash):
-    entry = meta[meta['episode_filename_prefix'] == hash]
+    entry = meta[meta["episode_filename_prefix"] == hash]
     # limit title length
-    show_name = entry['show_name'].values[0].lower().replace(" ", "_")
+    show_name = entry["show_name"].values[0].lower().replace(" ", "_")
     # max 2 words, max 15 chars
     show_name = "_".join(show_name.split("_")[:2])[:15]
     ep_name = entry["episode_name"].values[0].lower().replace(" ", "_")
     ep_name = "_".join(ep_name.split("_")[:2])[:15]
     idx = entry.index[0]
     title = "_".join(["spotify", show_name, ep_name, str(idx)])
-    return re.sub(r'\W+', '', title)    # filter non alphanumerical chars
+    return re.sub(r"\W+", "", title)  # filter non alphanumerical chars
 
 
 def extract_spotify(max_nr=None):
 
     meta = pd.read_csv(config.paths["spotify_meta"], sep="\t")
 
-    json_paths = []
+    json_paths = set()
 
     def extract_jsons(root):
         for path in os.listdir(root):
@@ -88,18 +90,23 @@ def extract_spotify(max_nr=None):
             if os.path.isdir(full_path):
                 extract_jsons(full_path + "/")
             else:
-                json_paths.append(full_path)
+                json_paths.add(full_path)
 
     root = config.paths["spotify_root"]
     extract_jsons(root)
 
+    existing_transcripts = set(os.listdir(config.paths["transcripts"]))
+
     counter = 0
-    for jp in json_paths:
+    for jp in tqdm(json_paths):
         hash = jp.split("/")[-1].split(".")[0]
-        new_fn = make_title(meta, hash)
+        try:
+            new_fn = make_title(meta, hash)
+        except IndexError:
+            continue
         new_fp = config.paths["transcripts"] + new_fn + ".txt"
 
-        if os.path.exists(new_fp):
+        if new_fp in existing_transcripts:
             continue
 
         utterances, speakers_and_times = extract_json_transcript(jp)
@@ -124,5 +131,4 @@ def remove_all_spotify():
 
 
 if __name__ == "__main__":
-    extract_spotify(max_nr=50)
-    # remove_all_spotify()
+    extract_spotify(max_nr=None)
