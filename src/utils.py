@@ -453,6 +453,9 @@ def get_speakers():
 
 
 def load_one_transcript(fpath, chunked=True, chunk_size=100):
+
+    if "spotify" in fpath:
+        return load_spotify_transcript(fpath, chunked, chunk_size)
     with open(fpath, "r") as f:
         transcript = f.read().replace("...", "")
     transcript = transcript.split("\n")
