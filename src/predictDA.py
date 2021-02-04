@@ -28,7 +28,7 @@ class DA_classifier:
         self.tag2full = get_tag2full_label(self.corpus, self.detail_level)
         self.n_tags = len(self.tag2id.keys())
 
-        self.tokenizer = get_tokenizer(rebuild_from_all_texts=False)
+        self.tokenizer = get_tokenizer(rebuild_from_all_words=False)
         word2id = self.tokenizer.word_index
 
         # WARNING: if you force rebuild, the embedding matrix

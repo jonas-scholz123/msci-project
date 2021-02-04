@@ -32,7 +32,7 @@ labels = chunk(labels, max_nr_utterances)
 n_tags = len(get_id2tag(corpus, detail_level=detail_level))
 
 # TODO set to false for final model
-tokenizer = get_tokenizer(rebuild_from_all_texts=False)
+tokenizer = get_tokenizer(rebuild_from_all_words=False)
 word2id = tokenizer.word_index
 
 X, y = make_model_readable_data(

@@ -66,7 +66,8 @@ def get_embedding_matrix(path, word2id, force_rebuild=False):
         with open(fpath, "rb") as f:
             matrix = pickle.load(f)
     else:
-        glv_vector = load_pretrained_glove(path)
+        # glv_vector = load_pretrained_glove(path)
+        glv_vector = load_pretrained_conceptnet()
         dim = len(glv_vector[list(glv_vector.keys())[0]])
         matrix = np.zeros((len(word2id) + 1, dim))
 
@@ -125,14 +126,14 @@ def merge_offset_arrays(base, offset, step):
     return base
 
 
-def get_tokenizer(rebuild_from_all_texts=False):
+def get_tokenizer(rebuild_from_all_words=False):
 
     tokenizer = Tokenizer(filters="")
     preloaded_exists = os.path.exists("../helper_files/tokenizer.pkl")
-    if rebuild_from_all_texts or not preloaded_exists:
+    if rebuild_from_all_words or not preloaded_exists:
         print("Building tokenizer from all words, this might take a while...")
-        all_texts = get_all_texts()
-        tokenizer.fit_on_texts(all_texts)
+        all_words = get_all_words()
+        tokenizer.fit_on_texts(all_words)
         with open("../helper_files/tokenizer.pkl", "wb") as f:
             pickle.dump(tokenizer, f)
 
@@ -171,16 +172,26 @@ def make_model_readable_y(labels, max_nr_utterances):
     return pad_sequences(y, max_nr_utterances, padding="post")
 
 
-def get_all_texts():
-    all_texts = []
-    all_texts += sum(load_mrda_data()[0], [])
-    all_texts += sum(load_swda_data()[0], [])
-    transcripts = load_all_transcripts(chunked=False)
-    transcript_texts = [entry[0] for t in transcripts for entry in t]
-    all_texts += transcript_texts
+def get_all_words():
+    all_words = set()
+    all_words = all_words.union(
+        set(nltk.word_tokenize(" ".join(sum(load_mrda_data()[0], [])).lower()))
+    )
+    all_words = all_words.union(
+        set(nltk.word_tokenize(" ".join(sum(load_swda_data()[0], [])).lower()))
+    )
 
-    all_texts = [(" ".join(nltk.word_tokenize(s))).lower() for s in all_texts]
-    return all_texts
+    t_words = set()
+    for entry in tqdm(os.walk("../processed_transcripts/")):
+        folder = entry[0]
+        for fname in entry[-1]:
+            if not fname.endswith(".pkl"):
+                continue
+            fpath = folder + "/" + fname
+            t_words = t_words.union(extract_words(pd.read_pickle(fpath)))
+
+    all_words = list(all_words.union(t_words))
+    return all_words
 
 
 def turn_tags_to_id(labels, tag2id):
@@ -508,3 +519,9 @@ def load_spotify_transcript(fpath, chunked=True, chunk_size=100):
     if chunked:
         entries = split_into_chunks(entries, chunk_size)
     return entries
+
+
+def extract_words(tdf):
+    words = set()
+    tdf["utterance"].str.lower().str.split().apply(words.update)
+    return words
