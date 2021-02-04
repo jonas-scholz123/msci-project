@@ -119,5 +119,55 @@ def process_all_transcripts(force_rebuild=False, max_nr=30):
     return
 
 
+def split_into_subfolders(root, extensions, files_per_dir):
+    root_content = os.listdir(root)
+    directories = [c for c in root_content if os.path.isdir(root + c)]
+    files_root = [f for f in root_content if os.path.isfile(root + f)]
+
+    filenames = list(set([f.split(".")[0] for f in files_root]))
+
+    if directories:
+        dir_counter = int(max(directories))
+        current_directory = root + max(directories) + "/"
+        remaining_space = files_per_dir - len(os.listdir(current_directory))
+    else:
+        dir_counter = 1
+        remaining_space = files_per_dir
+        current_directory = root + str(dir_counter) + "/"
+        os.mkdir(current_directory)
+
+    for i, fname in tqdm(enumerate(filenames)):
+        if not fname:
+            continue
+
+        if remaining_space <= 0:
+            dir_counter += 1
+            current_directory = root + str(dir_counter) + "/"
+
+            if not os.path.exists(current_directory):
+                os.mkdir(current_directory)
+                remaining_space = files_per_dir
+            else:
+                remaining_space = (
+                    files_per_dir - len(os.listdir(current_directory)) // 2
+                )
+        for extension in extensions:
+            os.rename(root + fname + extension, current_directory + fname + extension)
+            remaining_space -= 1
+
+
+def merge_folders_into_root():
+    root = config.paths["tdfs"]
+
+    for dir in tqdm(os.listdir(root)):
+        if not os.path.isdir(root + dir):
+            continue
+        dir = root + dir + "/"
+        for file in os.listdir(dir):
+            os.rename(dir + file, root + file)
+
+
 if __name__ == "__main__":
-    process_all_transcripts(force_rebuild=False, max_nr=None)
+    # process_all_transcripts(force_rebuild=False, max_nr=None)
+    # split_into_subfolders(config.paths["tdfs"], [".csv", ".pkl"], 200)
+    split_into_subfolders(config.paths["transcripts"], [".txt"], 100)
