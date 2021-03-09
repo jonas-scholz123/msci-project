@@ -7,6 +7,7 @@ import operator
 import re
 from tqdm import tqdm
 import pandas as pd
+import seaborn as sns
 
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
@@ -60,7 +61,7 @@ def load_pretrained_conceptnet():
     return ConceptNetDict()
 
 
-def get_embedding_matrix(path, word2id, force_rebuild=False):
+def get_embedding_matrix(word2id, force_rebuild=False):
     fpath = "../helper_files/embedding_matrix.pkl"
     if not force_rebuild and os.path.exists(fpath):
         with open(fpath, "rb") as f:
@@ -69,6 +70,7 @@ def get_embedding_matrix(path, word2id, force_rebuild=False):
         # glv_vector = load_pretrained_glove(path)
         glv_vector = load_pretrained_conceptnet()
         dim = len(glv_vector[list(glv_vector.keys())[0]])
+        dim = 300
         matrix = np.zeros((len(word2id) + 1, dim))
 
         for word, id in word2id.items():
@@ -525,3 +527,7 @@ def extract_words(tdf):
     words = set()
     tdf["utterance"].str.lower().str.split().apply(words.update)
     return words
+
+
+if __name__ == "__main__":
+    all_words = get_all_words()

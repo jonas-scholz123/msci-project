@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 # %matplotlib inline
 from matplotlib.patches import Circle, ConnectionPatch
 from matplotlib.lines import Line2D
+from matplotlib.transforms import Bbox
 from utils import load_all_processed_transcripts
 import numpy as np
 import pandas as pd
@@ -47,7 +48,7 @@ class Visualiser:
 
         self.node_radius = 0.3
 
-        self.fig = plt.figure(0, figsize=(self.size // 10, 2))
+        self.fig = plt.figure(0, figsize=(self.size // 10, 2.4))
         self.ax = self.fig.add_subplot(111, aspect="equal")
 
         self.nr_objects = np.zeros(max_nodes)
@@ -82,7 +83,7 @@ class Visualiser:
         n1 = self.add_node(x1, y)
         self.connect_nodes(n0, n1, color=color)
 
-        fontsize = max(min(8, (x1 - x0) / len(s) * 8), 4) * 1.8
+        fontsize = max(min(8, (x1 - x0) / len(s) * 8), 4) * 1.6
         plt.annotate(
             s,
             ((x1 + x0) / 2, y + self.delta_y / 3),
@@ -100,9 +101,9 @@ class Visualiser:
         plt.show()
 
     def save_fig(self, name):
-        fpath = config.paths["figures"] + name + "_topics.pdf"
+        fpath = config.paths["figures"] + name + "_topics.png"
         self.set_axes()
-        plt.savefig(fpath)
+        plt.savefig(fpath, dpi=500)
 
     def connect_nodes(self, n0, nf, color=None):
         x0, y0 = n0.center
@@ -115,7 +116,11 @@ class Visualiser:
 
         # -0.3 to not have anything leak over edges
         con = ConnectionPatch(
-            n0.center, (min(xf, self.vis_range[1] - 0.3), yf), "data", "data", zorder=0
+            (max(x0, self.vis_range[0] + 0.3), yf),
+            (min(xf, self.vis_range[1] - 0.3), yf),
+            "data",
+            "data",
+            zorder=0,
         )
         con.set_linewidth(4)
         if color:
@@ -174,10 +179,11 @@ def get_colormap(embeddings_1d):
 if __name__ == "__main__":
     te = TopicExtractor()
 
-    transcript_name = "joe_rogan_elon_musk"
-    tdf = pd.read_pickle("../processed_transcripts/joe_rogan_elon_musk.pkl")
+    transcript_name = "joe_rogan_jack_dorsey"
+    tdf = pd.read_pickle("../processed_transcripts/" + transcript_name + ".pkl")
     perfect_bounds = set([4, 21, 30, 49, 72, 104, 127, 131, 146, 169, 220, 225, 237])
-    vis_range = (100, 200)
+    vis_range = (0, 200)
+    # vis_range = None
 
     embeds1d = np.array(te.fit_n_d_embeddings(tdf, 1))
     scalar_to_color = get_colormap(embeds1d)
@@ -198,23 +204,34 @@ if __name__ == "__main__":
         if embedding_1d is False:
             color = "lightgrey"
         color = scalar_to_color.to_rgba(embedding_1d)
-        vis.add_section(tr[0], tr[1], joined, "lightgrey")
+        vis.add_section(tr[0], tr[1], joined, color)
 
-    vis.add_segments(topic_ranges, perfect_bounds, len(tdf))
+    # vis.add_segments(topic_ranges, perfect_bounds, len(tdf))
 
     vis.ax.get_yaxis().set_visible(False)
-    vis.ax.set_title(
-        r"GEEK segmentation: $u_{"
-        + str(vis_range[0])
-        + r"}$ to $u_{"
-        + str(vis_range[1])
-        + r"}$",
-        fontsize=16,
-    )
-    # vis.ax.set_xlabel("Utterance Index", fontsize=14)
 
-    plt.subplots_adjust(top=1, bottom=0.06, right=0.99, left=0.01, hspace=0, wspace=0)
-    plt.margins(0, 0)
+    if vis_range is not None:
+        vis.ax.set_title(
+            "GEEK Topics: "
+            + transcript_name.replace("_", " ").title()
+            + r" $u_{"
+            + str(vis_range[0])
+            + r"}$ to $u_{"
+            + str(vis_range[1])
+            + r"}$",
+            fontsize=16,
+        )
+    else:
+        vis.ax.set_title("GEEK Topics")
 
-    vis.save_fig(transcript_name + str(vis_range[0]) + "_" + str(vis_range[1]))
+    vis.ax.set_xlabel("Utterance Index", fontsize=14)
+
+    plt.subplots_adjust(top=1, bottom=0.07, right=0.98, left=0.02, hspace=0, wspace=0)
+    plt.margins(0)
+    plt.tight_layout()
+
+    if vis_range is not None:
+        vis.save_fig(transcript_name + str(vis_range[0]) + "_" + str(vis_range[1]))
+    else:
+        vis.save_fig(transcript_name)
     vis.show_fig()

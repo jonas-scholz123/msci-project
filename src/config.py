@@ -131,6 +131,7 @@ topics = dict(
             "world",
             "topic",
             "take",
+            "you_know",
         ]
     ),
     filler_das=set(
@@ -153,9 +154,9 @@ topics = dict(
     ),
     # max number of sentences between two topic_word matches
     # for it to no longer be one topic
-    max_gap=10,
-    min_sim=0.6,
-    min_topic_length=1,
+    max_gap=11,
+    min_sim=0.55,
+    min_topic_length=3,
 )
 
 # disable huge number of information prints by tensorflow

@@ -113,7 +113,9 @@ class TopicExtractor:
         for words in zip(tokens, tokens[1:]):
             combined = "_".join(words).lower()
             # if self.in_word_net(combined):
-            if self.in_embeddings(combined):
+            if self.in_embeddings(combined) and self.in_word_net(
+                combined.split("_")[-1]
+            ):
                 keywords.add(combined)
         return keywords
 

@@ -170,4 +170,19 @@ def merge_folders_into_root():
 if __name__ == "__main__":
     # process_all_transcripts(force_rebuild=False, max_nr=None)
     # split_into_subfolders(config.paths["tdfs"], [".csv", ".pkl"], 200)
-    split_into_subfolders(config.paths["transcripts"], [".txt"], 100)
+    # split_into_subfolders(config.paths["transcripts"], [".txt"], 100)
+
+    fname = "joe_rogan_jack_dorsey.txt"
+
+    fname = fname.split(".")[0]
+    transcript = load_one_transcript(config.paths["transcripts"] + fname + ".txt")
+    # only process unprocessed transcripts
+    dac = DA_classifier()
+    te = TopicExtractor()
+    tdf = dac.make_annotated_transcript(transcript)
+    tdf = enhance_tdf(tdf)
+    tdf = te.process(tdf)
+    # csvs are human readable
+    tdf.to_csv("../processed_transcripts/" + fname + ".csv", index=False)
+    # pickle preserves objects such as lists, sets
+    tdf.to_pickle("../processed_transcripts/" + fname + ".pkl")
