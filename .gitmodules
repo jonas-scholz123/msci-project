@@ -1,0 +1,3 @@
+[submodule "msci-thesis-latex"]
+	path = msci-thesis-latex
+	url = https://github.com/jonas-scholz123/msci-thesis-latex.git
