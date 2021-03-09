@@ -2,6 +2,7 @@ from keras import Sequential
 from keras.models import Model, Input
 from keras.layers import (
     LSTM,
+    GRU,
     Embedding,
     Dense,
     TimeDistributed,
@@ -15,11 +16,20 @@ from keras.layers import (
 
 # from keras.optimizers import Adam, schedules
 from tf2crf import CRF
-
 import config
 
 
-def get_bilstm_crf_model(embedding_matrix, n_tags, verbose=False):
+class BiRNN_CRF_factory:
+    def __init__(self, embedding_matrix, n_tags, rnn_type):
+        self.embedding_matrix = embedding_matrix
+        self.n_tags = n_tags
+        self.rnn = LSTM if rnn_type == "lstm" else GRU
+
+    def get(self):
+        return get_birnn_crf_model(self.embedding_matrix, self.n_tags, self.rnn)
+
+
+def get_birnn_crf_model(embedding_matrix, n_tags, rnn, verbose=False):
     print("loading model...")
     max_nr_utterances = config.data["max_nr_utterances"]
     max_nr_words = config.data["max_nr_words"]
@@ -45,7 +55,7 @@ def get_bilstm_crf_model(embedding_matrix, n_tags, verbose=False):
     # utterance_encoder.add(AveragePooling1D(max_nr_words))
 
     # last pooling
-    utterance_encoder.add(Bidirectional(LSTM(nr_lstm_cells)))
+    utterance_encoder.add(Bidirectional(rnn(nr_lstm_cells)))
     utterance_encoder.add(Dropout(dropout_rate))
     # utterance_encoder.add(Flatten())
     if verbose:
@@ -55,7 +65,7 @@ def get_bilstm_crf_model(embedding_matrix, n_tags, verbose=False):
 
     x_input = Input(shape=(max_nr_utterances, max_nr_words))
     h = TimeDistributed(utterance_encoder)(x_input)
-    h = Bidirectional(LSTM(nr_lstm_cells, return_sequences=True))(h)
+    h = Bidirectional(rnn(nr_lstm_cells, return_sequences=True))(h)
     h = Dropout(dropout_rate)(h)
     h = Dense(n_tags, activation=None)(h)
     crf_output = crf(h)
