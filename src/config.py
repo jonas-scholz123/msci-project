@@ -3,6 +3,7 @@ import os
 data = dict(
     max_nr_utterances=100,
     max_nr_words=107,  # max out of swda, mrda corpora
+    embedding_dim=300,
 )
 
 model = dict(

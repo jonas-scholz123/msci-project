@@ -1,7 +1,7 @@
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-from utils import load_pretrained_conceptnet
+from dataloader import load_pretrained_conceptnet
 from tqdm import tqdm
 import nltk
 from nltk.corpus import wordnet as wn

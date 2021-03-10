@@ -77,7 +77,6 @@ def get_birnn_crf_model(embedding_matrix, n_tags, rnn, verbose=False):
     #     init_lr, decay_steps=decay_rate, decay_rate=decay_rate
     # )
 
-    # optimizer = Adam(learning_rate=lr_schedule)  # TODO: check if used?
     model.compile("adam", loss=crf.loss, metrics=[crf.accuracy])
     print("Done!")
     return model

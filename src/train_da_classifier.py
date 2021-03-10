@@ -2,15 +2,15 @@ import config
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
-from bilstm_crf import BiRNN_CRF_factory
+from da_classifier import BiRNN_CRF_factory
 from mappings import get_id2tag, get_tag2full_label
 from utils import (
     get_embedding_matrix,
     get_tokenizer,
     make_model_readable_data,
     chunk,
-    load_corpus_data,
 )
+from dataloader import load_corpus_data
 import tensorflow as tf
 import os
 import matplotlib as mpl
@@ -33,6 +33,25 @@ test_fraction = config.model["test_fraction"]
 validation_fraction = config.model["validation_fraction"]
 rnn_type = "gru"
 
+
+def make_heatmap(data, labels, title, save_path, display_values=True):
+    plt.figure(figsize=(8, 6))
+    g = sns.heatmap(
+        data,
+        xticklabels=labels,
+        yticklabels=labels,
+        # cmap="YlOrRd",
+        # cmap="hot",
+        cmap="Blues",
+        annot=display_values,
+        square=True,
+    )
+    g.set_title(title, fontsize=16)
+    g.set_xlabel("Predicted Label", fontsize=14)
+    g.set_ylabel("True Label", fontsize=14)
+    plt.savefig(save_path, bbox_inches="tight")
+    plt.show()
+
 conversations, labels = load_corpus_data(corpus, detail_level)
 
 conversations = chunk(conversations, max_nr_utterances)
@@ -40,7 +59,6 @@ labels = chunk(labels, max_nr_utterances)
 
 n_tags = len(get_id2tag(corpus, detail_level=detail_level))
 
-# TODO set to false for final model
 tokenizer = get_tokenizer(rebuild_from_all_words=False)
 word2id = tokenizer.word_index
 
@@ -91,23 +109,6 @@ labels = [tag2full.get(t) for t in id2tag.values()]
 cm = confusion_matrix(y_test.flatten(), y_pred.flatten(), normalize="true")
 
 #%%
-def make_heatmap(data, labels, title, save_path, display_values=True):
-    plt.figure(figsize=(8, 6))
-    g = sns.heatmap(
-        data,
-        xticklabels=labels,
-        yticklabels=labels,
-        # cmap="YlOrRd",
-        # cmap="hot",
-        cmap="Blues",
-        annot=display_values,
-        square=True,
-    )
-    g.set_title(title, fontsize=16)
-    g.set_xlabel("Predicted Label", fontsize=14)
-    g.set_ylabel("True Label", fontsize=14)
-    plt.savefig(save_path, bbox_inches="tight")
-    plt.show()
 
 
 flat_y = y_test.flatten()
