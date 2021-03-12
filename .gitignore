@@ -12,4 +12,3 @@ transcripts/*/spotify*
 spotify_transcripts/
 venv/
 .vscode/
-.vscodeold/
