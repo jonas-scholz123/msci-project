@@ -1,9 +1,9 @@
-from nltk.metrics.segmentation import windowdiff, pk
+from collections import defaultdict
 import numpy as np
 import pandas as pd
+
 from topics import TopicExtractor
-from utils import load_one_transcript
-from collections import defaultdict
+from nltk.metrics.segmentation import windowdiff
 
 
 def bound2seg(bounds, max_i):
@@ -30,19 +30,18 @@ def get_topic_ranges(tdf):
     return trs
 
 
-def get_geek_bounds(topic_ranges, max_i):
+def get_geek_bounds(tr_tuples):
     # sort topics by tr, so that bigger ones placed at the bottom
 
-    tr_items = [(topic, tr) for topic, trs in topic_ranges.items() for tr in trs]
-
-    tr_items = sorted(tr_items, key=lambda x: x[1][1] - x[1][0], reverse=True)
-    min_topic_length = 5
-
-    covered = np.zeros(max_i)
+    # gets element with highest range_max, then accesses that rangemax
+    tr_ends = [tr_tuple[1][1] for tr_tuple in tr_tuples]
+    max_index = max(tr_ends)
+    covered = np.zeros(max_index)
     geek_bounds = []
-    for item in tr_items:
+
+    for item in tr_tuples:
         tr = item[1]
-        if tr[1] - tr[0] < min_topic_length or any(covered[tr[0] : tr[1]] == 1):
+        if any(covered[tr[0] : tr[1]] == 1):
             continue
         covered[tr[0] : tr[1]] = 1
         geek_bounds.append(tr[0])
@@ -71,7 +70,10 @@ if __name__ == "__main__":
 
     topic_ranges = get_topic_ranges(tdf)
 
-    geek_bounds = get_geek_bounds(topic_ranges, max_i)
+    tr_tuples = [(topic, tr) for topic, trs in topic_ranges.items() for tr in trs]
+    tr_tuples = sorted(tr_tuples, key=lambda x: x[1][1] - x[1][0], reverse=True)
+
+    geek_bounds = get_geek_bounds(tr_tuples)
     geek_seg = bound2seg(geek_bounds, max_i)
 
     print("wd GEEK: ", windowdiff(geek_seg, perfect_seg, k=k))

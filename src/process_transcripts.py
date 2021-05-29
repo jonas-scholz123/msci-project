@@ -3,7 +3,7 @@ from tqdm import tqdm
 import os
 import numpy as np
 import config
-from utils import load_one_transcript
+from dataloader import load_one_transcript
 from predictDA import DA_classifier
 from topics import TopicExtractor
 import multiprocessing as mp
@@ -110,7 +110,7 @@ def process_all_transcripts(force_rebuild=False, max_nr=30):
     if nr_processes > 1:
         with tqdm(total=total_number, initial=nr_already) as pbar:
             pool = mp.Pool(nr_processes, process_init)
-            for i, _ in enumerate(pool.imap(process, fnames)):
+            for _ , _ in enumerate(pool.imap(process, fnames)):
                 pbar.update()
     else:
         process_init()
@@ -136,7 +136,7 @@ def split_into_subfolders(root, extensions, files_per_dir):
         current_directory = root + str(dir_counter) + "/"
         os.mkdir(current_directory)
 
-    for i, fname in tqdm(enumerate(filenames)):
+    for fname in tqdm(filenames):
         if not fname:
             continue
 

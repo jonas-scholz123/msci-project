@@ -11,3 +11,4 @@ helper_files/glove.840B.300d.pkl
 transcripts/*/spotify*
 spotify_transcripts/
 venv/
+.vscode/

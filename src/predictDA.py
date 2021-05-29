@@ -6,15 +6,15 @@ from utils import (
     get_tokenizer,
     make_model_readable_X,
     merge_offset_arrays,
-    load_one_transcript,
 )
-from bilstm_crf import get_bilstm_crf_model
+from dataloader import load_one_transcript
+from da_classifier import BiRNN_CRF_factory
 from mappings import get_id2tag, get_tag2full_label
 import config
 
 
 class DA_classifier:
-    def __init__(self, verbose=False):
+    def __init__(self, verbose=False, rnn_type="gru"):
 
         self.max_nr_utterances = config.data["max_nr_utterances"]
         self.max_nr_words = config.data["max_nr_words"]
@@ -35,14 +35,13 @@ class DA_classifier:
         # may change and you may need to retrain the Neural Network!
 
         # set force rebuild to False when not changing total vocabulary
-        self.embedding_matrix = get_embedding_matrix(
-            "../data/embeddings/glove.840B.300d.txt", word2id, force_rebuild=False
-        )
+        self.embedding_matrix = get_embedding_matrix(word2id, force_rebuild=False)
 
         # use GPU
         os.environ["TF_FORCE_GPU_ALLOW_GROWTH"] = "true"
 
-        self.model = get_bilstm_crf_model(self.embedding_matrix, self.n_tags)
+        factory = BiRNN_CRF_factory(self.embedding_matrix, self.n_tags, rnn_type)
+        self.model = factory.get()
 
         data_name = self.corpus + "_detail_" + str(self.detail_level)
         checkpoint_path = "../trained_model/bilstm_crf/ckpt_" + data_name + ".hdf5"

@@ -1,18 +1,15 @@
-import matplotlib.pyplot as plt
-
-# %matplotlib inline
-from matplotlib.patches import Circle, ConnectionPatch
-from matplotlib.lines import Line2D
-from matplotlib.transforms import Bbox
-from utils import load_all_processed_transcripts
+from collections import defaultdict
 import numpy as np
 import pandas as pd
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+from matplotlib import cm
+from matplotlib.patches import Circle, ConnectionPatch
+from matplotlib.lines import Line2D
+# %matplotlib inline
+
 from topics import TopicExtractor
 import config
-from matplotlib import cm
-import matplotlib as mpl
-from tqdm import tqdm
-from collections import defaultdict
 
 from seg_eval import get_geek_bounds
 
@@ -53,6 +50,9 @@ class Visualiser:
 
         self.nr_objects = np.zeros(max_nodes)
         self.lowest_free_y = np.zeros(max_nodes)
+
+        # don't want y_axis
+        self.ax.get_yaxis().set_visible(False)
 
     def add_node(self, x, y):
         node = Circle((x, y), self.node_radius)
@@ -111,7 +111,7 @@ class Visualiser:
 
         self.nr_objects[int(x0) : int(xf)] += 1
 
-        for i, lfy in enumerate(self.lowest_free_y[int(x0) : int(xf)], int(x0)):
+        for i, _ in enumerate(self.lowest_free_y[int(x0) : int(xf)], int(x0)):
             self.lowest_free_y[i] = y0 + self.delta_y
 
         # -0.3 to not have anything leak over edges
@@ -127,13 +127,58 @@ class Visualiser:
             con.set_edgecolor(color)
         self.ax.add_artist(con)
 
-    def add_segments(self, topic_ranges, perfect_bounds, max_i):
-        geek_bounds = set(get_geek_bounds(topic_ranges, max_i))
 
-        matching_bounds = geek_bounds.intersection(perfect_bounds)
+class TdfVisualiser(Visualiser):
+    def __init__(self, tdf, topic_extractor, vis_range=None, perfect_bounds=None):
+        if vis_range is None:
+            vis_range = (0, len(tdf))
+        super().__init__(len(tdf), vis_range)
+
+        self.perfect_bounds = perfect_bounds
+        self.tdf = tdf
+        self.te = topic_extractor
+        self.min_topic_length = config.topics["min_topic_length"]
+        self.defaultcolor = "lightgrey"
+
+        self.colormap = self.make_colormap()
+        self.trs = self.make_topic_ranges()
+
+    def make_colormap(self):
+        embeddings_1d = np.array(self.te.fit_n_d_embeddings(self.tdf, 1))
+        norm = mpl.colors.Normalize(embeddings_1d.min(), embeddings_1d.max())
+        cmap = cm.Dark2
+        return cm.ScalarMappable(norm=norm, cmap=cmap)
+    
+    def make_topic_ranges(self):
+        trs = defaultdict(list)
+
+        for i, topics in self.tdf["topics"].iteritems():
+            for topic in topics:
+                existing_range = trs.get(frozenset(topic))
+                if (
+                    existing_range is not None
+                    and i >= existing_range[-1][0]
+                    and i <= existing_range[-1][1]
+                ):
+                    continue
+                for j, next_topics in self.tdf.loc[i + 1 :, "topics"].iteritems():
+                    if topic in next_topics:
+                        continue
+                    trs[frozenset(topic)].append((i, j - 1))
+                    break
+        tr_items = [(topic, tr) for topic, trs in trs.items() for tr in trs]
+        return sorted(tr_items, key=lambda x: x[1][1] - x[1][0], reverse=True)
+
+    def add_segments(self):
+        if not self.perfect_bounds:
+            return
+
+        geek_bounds = set(get_geek_bounds(self.trs))
+
+        matching_bounds = geek_bounds.intersection(self.perfect_bounds)
 
         geek_not_perfect_bounds = geek_bounds - matching_bounds
-        perfect_not_geek_bounds = perfect_bounds - matching_bounds
+        perfect_not_geek_bounds = self.perfect_bounds - matching_bounds
 
         for b in matching_bounds:
             self.add_boundary(b, "black", offset=0, label="Perfect match")
@@ -149,80 +194,56 @@ class Visualiser:
         ]
         self.ax.legend(handles=legend_elements)
 
-
-def get_topic_ranges(tdf):
-    trs = defaultdict(list)
-
-    for i, topics in tdf["topics"].iteritems():
-        for topic in topics:
-            existing_range = trs.get(frozenset(topic))
-            if (
-                existing_range is not None
-                and i >= existing_range[-1][0]
-                and i <= existing_range[-1][1]
-            ):
+    def make_plot(self):
+        for topic, tr in self.trs:
+            if tr[1] - tr[0] < self.min_topic_length:
                 continue
-            for j, next_topics in tdf.loc[i + 1 :, "topics"].iteritems():
-                if topic in next_topics:
-                    continue
-                trs[frozenset(topic)].append((i, j - 1))
-                break
-    return trs
+            joined = ", ".join(list(topic))
+            embedding_1d = self.te.get_n_d_embedding(topic, 1)
+            if embedding_1d is False:
+                color = self.defaultcolor
+            else:
+                color = self.colormap.to_rgba(embedding_1d)
+            self.add_section(tr[0], tr[1], joined, color)
+
+    def set_title(self, title=None):
+
+        if title is not None:
+            self.ax.set_title(title)
+            return
+
+        speakers = pd.unique(self.tdf["speaker"])
+
+        if self.vis_range is not None:
+            vis.ax.set_title(
+                "GEEK Topics: "
+                + " ".join(speakers)
+                + r" $u_{"
+                + str(self.vis_range[0])
+                + r"}$ to $u_{"
+                + str(self.vis_range[1])
+                + r"}$",
+                fontsize=16,
+            )
+        else:
+            self.ax.set_title("GEEK Topics")
 
 
-def get_colormap(embeddings_1d):
-    norm = mpl.colors.Normalize(embeddings_1d.min(), embeddings_1d.max())
-    cmap = cm.Dark2
-    return cm.ScalarMappable(norm=norm, cmap=cmap)
 
 
 if __name__ == "__main__":
     te = TopicExtractor()
 
-    transcript_name = "joe_rogan_jack_dorsey"
-    tdf = pd.read_pickle("../processed_transcripts/" + transcript_name + ".pkl")
+    TRANSCRIPT_NAME = "joe_rogan_elon_musk"
+    tdf = pd.read_pickle("../processed_transcripts/" + TRANSCRIPT_NAME + ".pkl")
     perfect_bounds = set([4, 21, 30, 49, 72, 104, 127, 131, 146, 169, 220, 225, 237])
-    vis_range = (0, 200)
-    # vis_range = None
+    # vis_range = (0, 200)
+    vis_range = (0, 300)
 
-    embeds1d = np.array(te.fit_n_d_embeddings(tdf, 1))
-    scalar_to_color = get_colormap(embeds1d)
-    topic_ranges = get_topic_ranges(tdf)
-    vis = Visualiser(len(tdf), vis_range)
-    min_topic_length = 5
-    # sort topics by tr, so that bigger ones placed at the bottom
-
-    tr_items = [(topic, tr) for topic, trs in topic_ranges.items() for tr in trs]
-
-    tr_items = sorted(tr_items, key=lambda x: x[1][1] - x[1][0], reverse=True)
-
-    for topic, tr in tr_items:
-        if tr[1] - tr[0] < min_topic_length:
-            continue
-        joined = ", ".join(list(topic))
-        embedding_1d = te.get_n_d_embedding(topic, 1)
-        if embedding_1d is False:
-            color = "lightgrey"
-        color = scalar_to_color.to_rgba(embedding_1d)
-        vis.add_section(tr[0], tr[1], joined, color)
-
-    # vis.add_segments(topic_ranges, perfect_bounds, len(tdf))
-
-    vis.ax.get_yaxis().set_visible(False)
-
-    if vis_range is not None:
-        vis.ax.set_title(
-            "GEEK Topics: "
-            + transcript_name.replace("_", " ").title()
-            + r" $u_{"
-            + str(vis_range[0])
-            + r"}$ to $u_{"
-            + str(vis_range[1])
-            + r"}$",
-            fontsize=16,
-        )
-    else:
-        vis.ax.set_title("GEEK Topics")
+    vis = TdfVisualiser(tdf, te, vis_range, perfect_bounds)
+    vis.make_plot()
+    vis.add_segments()
+    vis.set_title()
 
     vis.ax.set_xlabel("Utterance Index", fontsize=14)
 
@@ -231,7 +252,7 @@ if __name__ == "__main__":
     plt.tight_layout()
 
     if vis_range is not None:
-        vis.save_fig(transcript_name + str(vis_range[0]) + "_" + str(vis_range[1]))
+        vis.save_fig(TRANSCRIPT_NAME + str(vis_range[0]) + "_" + str(vis_range[1]))
     else:
-        vis.save_fig(transcript_name)
+        vis.save_fig(TRANSCRIPT_NAME)
     vis.show_fig()
