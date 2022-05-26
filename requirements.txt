@@ -48,7 +48,7 @@ sklearn
 
 # src/predictDA.py: 7
 # src/train_bilstm_crf.py: 6
-tensorflow == 2.3.0
+tensorflow == 2.7.2
 
 # src/bilstm_crf.py: 5
 tf2crf == 0.1.27
