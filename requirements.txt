@@ -25,7 +25,7 @@ nltk
 # src/train_bilstm_crf.py: 4
 # src/utils.py: 1
 # src/visualiser.py: 4,5
-numpy == 1.17.4
+numpy == 1.22.0
 
 # src/analyse_transcripts.py: 5
 # src/predictDA.py: 2
